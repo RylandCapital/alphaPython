@@ -3,16 +3,23 @@ from string import Template
 import requests
 import json
 import datetime as dt
-
+import os
 
 #for coinmarketcap
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
+ALPHADEFI_WALLET = os.getenv('ALPHADEFI_WALLET')
+CMC_API = os.getenv('CMC_API')
+
 
 class terraHelper(object):
     
-    def __init__(self, account):
-        self.account = str(account)
+    def __init__(self):
+        pass
 
     
     #returns ALL AVAILABLE mirror assets + statistics
@@ -101,7 +108,7 @@ class terraHelper(object):
               
         return query
     
-    #this gets holdings from mirror my page
+    #this gets holdings from mirror
     def maccount_holding_info(self, mtoken_address,
                           url='https://mantle.terra.dev/'):        
         query =  Template('''{
@@ -124,7 +131,7 @@ class terraHelper(object):
         return query
               
     
-    #returns my stakes, bond amounts, and pending rewards (rewards are 0?)
+    #returns my stakes, bond amounts, and pending rewards
     #the bond amount is number of LP tokens staked (does not include unstaked)
     def maccount_stake_info(self, url='https://mantle.terra.dev/'):
         query =  Template("""query {
@@ -462,7 +469,7 @@ class terraHelper(object):
         }
         headers = {
           'Accepts': 'application/json',
-          'X-CMC_PRO_API_KEY': 'e9558ea8-4ca6-4dc2-8f79-06303f95bff2',
+          'X-CMC_PRO_API_KEY': '{0}'.format(CMC_API),
         }
         
         session = requests.Session()
@@ -484,7 +491,7 @@ class terraHelper(object):
         }
         headers = {
           'Accepts': 'application/json',
-          'X-CMC_PRO_API_KEY': 'e9558ea8-4ca6-4dc2-8f79-06303f95bff2',
+          'X-CMC_PRO_API_KEY': '{0}'.format(CMC_API),
         }
         
         session = requests.Session()
@@ -532,14 +539,14 @@ class terraHelper(object):
     
     def get_kujira_summary():
         
-        req = requests.get('https://api.kujira.app/api/terra1vn5s4s7gpp4yu0mtad8recncyh2h2c6l4qesd6/borrowers/summary')
+        req = requests.get('https://api.kujira.app/api/{0}/borrowers/summary'.format(ALPHADEFI_WALLET))
         data = req.json()
         data = pd.DataFrame.from_dict(data['summary'])
         
         return data
     
     def get_kujia_liquidations(limit=100):
-         req = requests.get('https://api.kujira.app/api/terra1vn5s4s7gpp4yu0mtad8recncyh2h2c6l4qesd6/liquidations?limit={0}'.format(limit))
+         req = requests.get('https://api.kujira.app/api/{1}/liquidations?limit={0}'.format(limit, ALPHADEFI_WALLET))
          return pd.DataFrame.from_dict(req.json()['liquidations'])
 
     
@@ -549,7 +556,6 @@ class terraHelper(object):
         req = requests.get('https://api-osmosis.imperator.co/pools/v1/all')
         data= req.json()
 
-                
         df2s = []
         for i in [ '1', '560', '561', '562', '497', '498', '601', '604', '611', '584']:
             
@@ -569,12 +575,7 @@ class terraHelper(object):
            df2['id'] = i
            df2[''] = ''
            
-           df2.to_csv(r'C:\Users\rmathews\Downloads\{0}_{1}_{2}.csv'.format(data[i][0]['symbol'],
-                                                                            data[i][1]['symbol'],
-                                                                            i))
            df2s.append(df2)
-           
-        test = pd.concat(df2s).to_csv(r'C:\Users\rmathews\Downloads\all_osmo.csv')
         
     prices = []
     for i in ['OSMO', 'LUNA', 'SCRT', 'CMDX']:
@@ -584,7 +585,6 @@ class terraHelper(object):
             price['time'] = price['time'].apply(lambda x: dt.datetime.utcfromtimestamp(x))
             prices.append(price)
             
-    pd.concat(prices).to_csv(r'C:\Users\rmathews\Downloads\all_osmo_prices.csv')
             
           
         
