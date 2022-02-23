@@ -1,5 +1,12 @@
 .vscode/
 
+pyvenv.cfg
+*.exe
+*.bat
+Scripts/activate 
+*.ps1
+share/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
