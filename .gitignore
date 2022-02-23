@@ -7,6 +7,9 @@ Scripts/activate
 *.ps1
 share/
 
+Scripts/pywin32_testall.py
+Scripts/pywin32_postinstall.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
