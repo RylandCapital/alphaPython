@@ -1,6 +1,6 @@
 # Install instructions 
 - Create a new virtualenv
-  - Make sure `python3 --version` returns the correct version
+  - Make sure `python3 --version` returns 3.9.4
   - `pip install virtualenv`
   - `python3 -m venv env`
 - Run `source env/bin/activate`
