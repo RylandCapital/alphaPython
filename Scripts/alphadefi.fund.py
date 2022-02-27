@@ -128,7 +128,7 @@ if __name__ == "__main__":
         collection.insert_one(marketcap_data[1])
         print('complete')
     
-    schedule.every().day.at("10:00").do(apiUpdate)
+    schedule.every().day.at("08:05").do(apiUpdate)
     print('running')
     while True:
         schedule.run_pending()

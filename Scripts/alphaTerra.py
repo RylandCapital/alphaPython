@@ -434,6 +434,9 @@ class alphaTerra(object):
         return [final_grid, final2]
 
     def anchorAPY(self):
+        
+        
+        today = (dt.datetime.now()+dt.timedelta(days=1)).strftime("%Y-%m-%d")
 
         anchor_data = []
 
@@ -478,11 +481,12 @@ class alphaTerra(object):
             float)*df['anc'].astype(float)*4656810/df['total_liabilities'].astype(float)
         df['timestamp'] = df['timestamp'].apply(
             lambda x: dt.datetime.utcfromtimestamp(x/1000))
+        
+        df.drop('height', axis=1, inplace=True)
+        distributiondf = df.copy()
 
         df.rename(columns={'distribution_apy': 'apr'}, inplace=True)
-        df.drop('height', axis=1, inplace=True)
         df['ticker'] = 'distributionAPR'
-    
 
         anchor_data.append(df[['timestamp', 'ticker', 'apr']])
 
@@ -502,8 +506,11 @@ class alphaTerra(object):
         df['timestamp'] = df['timestamp'].apply(
             lambda x: dt.datetime.utcfromtimestamp(x/1000))
         df['borrow_rate'] = df['borrow_rate'].astype(float)*4656810
-        df.rename(columns={'borrow_rate': 'apr'}, inplace=True)
+        
         df.drop('height', axis=1, inplace=True)
+        borrowdf = df.copy()
+         
+        df.rename(columns={'borrow_rate': 'apr'}, inplace=True)
         df['ticker'] = 'borrowAPR'
         df['apr'] = df['apr'].astype(float)
         
@@ -511,20 +518,16 @@ class alphaTerra(object):
         
         #############################
 
-        distributiondf = pd.read_excel(
-            r'P:\11_CWP Alternative\cwp alt\research\alphaRaw\Data\Anchor\AnchorDistributionAPY.xlsx')
-        distributiondf['height'] = distributiondf['height'].round(decimals=-4)
         distributiondf.set_index('timestamp', inplace=True)
-        borrowdf = pd.read_excel(
-            r'P:\11_CWP Alternative\cwp alt\research\alphaRaw\Data\Anchor\AnchorBorrowAPY.xlsx')
+
         borrowdf.set_index('timestamp', inplace=True)
 
         final = borrowdf.join(distributiondf.drop(
             'total_liabilities', axis=1)).dropna()
-        final['net_apr'] = final['distribution_apy']-final['apr']
+        final['net_apr'] = final['distribution_apy']-final['borrow_rate']
 
         
-        final.drop('apr', axis=1, inplace=True)
+        final.drop('borrow_rate', axis=1, inplace=True)
         final.rename(columns={'net_apr': 'apr'}, inplace=True)
 
         final['ticker'] = 'netApr'
@@ -1082,6 +1085,13 @@ class alphaTerra(object):
         master['date'] = master['date'].apply(lambda x : pd.to_datetime(
             dt.datetime.strftime(x,'%Y-%m-%d')))
         
+        terra_score = master.copy().groupby('ticker')['value'].last()
+        terraHealth = (((terra_score.loc['Daily Registered Accounts Percentile Rank'] +\
+            terra_score.loc['Daily UST Transaction Volume Percentile Rank($)'] -\
+            terra_score.loc['LUNA UST Market Cap Ratio Percentile Rank'])/3*100))
+        
+        
+        master['terraHealth'] = terraHealth
         
         tickers = master[~master['ticker'].isin(['UST Market Cap 7 Day Percent Change Average',
                                'UST Market Cap 1 Day Percent Change Average',
