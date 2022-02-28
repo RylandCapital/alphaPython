@@ -19,7 +19,7 @@ load_dotenv()
 ALPHADEFI_MONGO = os.getenv("ALPHADEFI_MONGO")
 
 
-"""this sripts pings mirror every minute but only saves data at end of the hour 
+"""this sripts pings mirror every minute but only saves data at end of the hour
 so this seems like overkill, we can just run once per hour?"""
 
 query = """{
@@ -67,10 +67,10 @@ def job():
             print(now)
 
             json_data["price"] = json_data["prices"].apply(
-                lambda x: x["price"] if x["price"] == None else float(x["price"])
+                lambda x: x["price"] if x["price"] is None else float(x["price"])
             )
             json_data["oralceprice"] = json_data["prices"].apply(
-                lambda x: x["oraclePrice"] if x["oraclePrice"] == None else float(x["oraclePrice"])
+                lambda x: x["oraclePrice"] if x["oraclePrice"] is None else float(x["oraclePrice"])
             )
             json_data["liquidity"] = json_data["statistic"].apply(lambda x: float(x["liquidity"]))
             json_data["volume"] = json_data["statistic"].apply(lambda x: float(x["volume"]))
@@ -115,7 +115,7 @@ def job():
                     mydict = {"date": now, "ust_circulating_supply": supply}
                     mycol.insert_one(mydict)
                 except Exception as e:
-                    print("error collecting UST marketCAP")
+                    print("error collecting UST marketCAP", e)
 
             print("got mirror data")
 

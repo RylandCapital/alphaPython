@@ -4,8 +4,6 @@ import time
 import pymongo
 import pandas as pd
 from pytz import timezone
-import requests
-import numpy as np
 import os
 
 from terrahelper import terraHelper
