@@ -12,6 +12,10 @@ from terrahelper import terraHelper
 
 from dotenv import load_dotenv
 
+from defiData1 import job as defiData1Job
+from defiData2 import job as defiData2Job
+from defiData3 import job as defiData3Job
+
 load_dotenv()
 
 ALPHADEFI_MONGO = os.getenv('ALPHADEFI_MONGO')
@@ -129,6 +133,9 @@ if __name__ == "__main__":
         print('complete')
     
     schedule.every().day.at("08:05").do(apiUpdate)
+    schedule.every().minute.at(":00").do(defiData1Job)
+    schedule.every().minute.at(":00").do(defiData2Job)
+    schedule.every(3).minutes.at(":30").do(defiData3Job)
     print('running')
     while True:
         schedule.run_pending()
