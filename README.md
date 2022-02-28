@@ -12,3 +12,7 @@
 # When making changes in packages
 - Run `pip install XX`
 - Run `pip freeze > requirements.txt` 
+
+# Compile and run docker
+- Compile docker: `docker build -t alpha-defi-test .`
+- Run docker `docker run -t alpha-defi-test`
