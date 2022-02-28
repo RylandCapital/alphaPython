@@ -2,14 +2,11 @@ import pandas as pd
 import numpy as np
 import requests
 import json
-from os import listdir
 from datetime import timedelta
 import datetime as dt
 from terrahelper import terraHelper
 import time
-import logging
 import re
-import math
 import os
 
 
@@ -29,7 +26,7 @@ class alphaTerra(object):
 
     def pullMirrorHistory(self, start_date="2021-04-29", end_date=None):
 
-        if end_date == None:
+        if end_date is None:
             end_date = (dt.datetime.now() + dt.timedelta(days=1)).strftime("%Y-%m-%d")
 
         mirror_tokens = list(requests.get("https://api.alphadefi.fund/info/tokendict").json()[0]["token"].keys())
@@ -130,7 +127,7 @@ class alphaTerra(object):
         json_data = pd.DataFrame(json.loads(r.text)["data"]["assets"])
         json_data["price"] = json_data["prices"].apply(lambda x: float(x["price"]))
         json_data["oralceprice"] = json_data["prices"].apply(
-            lambda x: x["oraclePrice"] if x["oraclePrice"] == None else float(x["oraclePrice"])
+            lambda x: x["oraclePrice"] if x["oraclePrice"] is None else float(x["oraclePrice"])
         )
         json_data["liquidity"] = json_data["statistic"].apply(lambda x: float(x["liquidity"]))
         json_data["volume"] = json_data["statistic"].apply(lambda x: float(x["volume"]))
@@ -192,7 +189,7 @@ class alphaTerra(object):
 
         df["verified0"] = df["asset0"].apply(lambda x: verify(x))
         df["verified1"] = df["asset1"].apply(lambda x: verify(x))
-        df = df[(df["verified0"] == 1) & (df["verified1"] == True)]
+        df = df[(df["verified0"] == 1) & (df["verified1"] is True)]
 
         """get decimals"""
         df["decimals0"] = df["asset0"].apply(lambda x: decimals(x)).fillna(6)
@@ -302,7 +299,7 @@ class alphaTerra(object):
         """calculate APRs"""
         df["isStableSwap"] = np.where(df["poolAddy"].isin(stableswaps), True, False)
         df["apr7d"] = np.where(
-            df["isStableSwap"] == False,
+            df["isStableSwap"] is False,
             df["swaprate"] * df["ustPoolVolume7d"] / df["ustLiquidity"] * 52,
             0.00025 * df["ustPoolVolume7d"] / df["ustLiquidity"] * 52,
         )
@@ -414,7 +411,7 @@ class alphaTerra(object):
 
     def anchorAPY(self):
 
-        today = (dt.datetime.now() + dt.timedelta(days=1)).strftime("%Y-%m-%d")
+        # today = (dt.datetime.now() + dt.timedelta(days=1)).strftime("%Y-%m-%d")
 
         anchor_data = []
 
@@ -517,7 +514,7 @@ class alphaTerra(object):
         for i in np.arange(curr_block - 500000, curr_block, 10000):
 
             count = True
-            while count == True:
+            while count is True:
                 try:
                     time.sleep(1)
 
@@ -572,7 +569,7 @@ class alphaTerra(object):
         for i in np.arange(curr_block - 500000, curr_block, 10000):
 
             count = True
-            while count == True:
+            while count is True:
                 try:
                     time.sleep(1)
 
@@ -654,7 +651,7 @@ class alphaTerra(object):
         for i in np.arange(curr_block - 500000, curr_block, 10000):
 
             count = True
-            while count == True:
+            while count is True:
                 try:
                     time.sleep(1)
 

@@ -1,14 +1,10 @@
-import numpy as np
-import pandas as pd
 import schedule
 import time
-import math
 import pymongo
 
 import os
 
 from alphaTerra import alphaTerra
-from terrahelper import terraHelper
 
 from dotenv import load_dotenv
 
