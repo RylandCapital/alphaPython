@@ -32,6 +32,7 @@ def job():
 
     buf = PrintPrepender("[Defi Data 2]: ")
     with redirect_stdout(buf):
+        print("Starting DefiData2 job")
         try:
 
             """liquidation nodes"""
@@ -105,8 +106,9 @@ def job():
 
 
 # %%
-schedule.every().minute.at(":00").do(job)
+if __name__ == "__main__":
+    schedule.every().minute.at(":00").do(job)
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)

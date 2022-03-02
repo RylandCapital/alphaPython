@@ -30,6 +30,7 @@ def apiUpdate():
     """update coin marketcaps required for other updates below"""
     buf = PrintPrepender("[API-Update]: ")
     with redirect_stdout(buf):
+        print("Starting job")
         collection = db.coinmarketcaps
         collection.create_index("id", unique=True)
         coincaps = terraHelper.coinmarketcaps()

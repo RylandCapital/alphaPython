@@ -1,6 +1,8 @@
 import schedule
 import time
 import pymongo
+import threading
+
 
 import os
 
@@ -17,20 +19,21 @@ load_dotenv()
 
 ALPHADEFI_MONGO = os.getenv("ALPHADEFI_MONGO")
 
-m = alphaTerra()
 
-"""define database"""
-client = pymongo.MongoClient(ALPHADEFI_MONGO, ssl=True, ssl_cert_reqs="CERT_NONE")
-db = client.alphaDefi
+def run_threaded(job_func):
+    job_thread = threading.Thread(target=job_func)
+    job_thread.start()
 
 
 if __name__ == "__main__":
 
-    schedule.every().day.at("08:05").do(apiUpdate)
-    schedule.every().minute.at(":00").do(defiData1Job)
-    schedule.every().minute.at(":00").do(defiData2Job)
-    schedule.every(3).minutes.at(":30").do(defiData3Job)
-    print("running")
+    print("Collecting Data")
+
+    schedule.every().day.at("08:05").do(run_threaded, apiUpdate)
+    schedule.every().minute.at(":00").do(run_threaded, defiData1Job)
+    schedule.every().minute.at(":00").do(run_threaded, defiData2Job)
+    schedule.every(3).minutes.at(":30").do(run_threaded, defiData3Job)
+
     while True:
         schedule.run_pending()
-        time.sleep(60)
+        time.sleep(1)

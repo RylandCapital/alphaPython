@@ -33,6 +33,7 @@ def job():
 
     buf = PrintPrepender("[Defi Data 3]: ")
     with redirect_stdout(buf):
+        print("Starting DefiData3 job")
         try:
 
             liquidations = terraHelper.get_kujia_liquidations(limit=200)
@@ -188,8 +189,9 @@ def job():
 
 
 # %%
-schedule.every(3).minutes.at(":30").do(job)
+if __name__ == "__main__":
+    schedule.every(3).minutes.at(":30").do(job)
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)

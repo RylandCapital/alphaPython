@@ -52,6 +52,7 @@ db = client.alphaDefi
 def job():
     buf = PrintPrepender("[Mirror Data]: ")
     with redirect_stdout(buf):
+        print("Starting DefiData1 job")
         try:
             try:
 
@@ -123,9 +124,9 @@ def job():
             print(e)
 
 
-# %%
-schedule.every().minute.at(":00").do(job)
+if __name__ == "__main__":
+    schedule.every().minute.at(":00").do(job)
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
