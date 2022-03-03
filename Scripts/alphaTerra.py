@@ -868,10 +868,10 @@ class alphaTerra(object):
             "daily_registered_accounts",
             "daily_block_rewards",
         ]
-        dashboard["staking_return_daily_rank"] = dashboard["staking_return_daily"].rank(pct=True)
-        dashboard["staking_return_annualized_rank"] = dashboard["staking_return_annualized"].rank(pct=True)
-        dashboard["daily_transaction_volume_rank"] = dashboard["daily_transaction_volume"].rank(pct=True)
-        dashboard["daily_registered_accounts_rank"] = dashboard["daily_registered_accounts"].rank(pct=True)
+        dashboard["staking_return_daily_rank"] = dashboard["staking_return_daily"].expanding(30).rank(pct=True)
+        dashboard["staking_return_annualized_rank"] = dashboard["staking_return_annualized"].expanding(30).rank(pct=True)
+        dashboard["daily_transaction_volume_rank"] = dashboard["daily_transaction_volume"].expanding(30).rank(pct=True)
+        dashboard["daily_registered_accounts_rank"] = dashboard["daily_registered_accounts"].expanding(30).rank(pct=True)
 
         """ bring in ustmc via api rather than csv"""
         today = (dt.datetime.now() + dt.timedelta(days=1)).strftime("%Y-%m-%d")
@@ -891,16 +891,16 @@ class alphaTerra(object):
         final = df.join(mc, how="outer")
         final["ustmc"] = final["close"] * final["value"]
         final["ustmc_1day_pct_change"] = final["ustmc"].pct_change()
-        final["ustmc_1day_pct_change_rank"] = final["ustmc"].pct_change().rank(pct=True)
+        final["ustmc_1day_pct_change_rank"] = final["ustmc"].pct_change().expanding(30).rank(pct=True)
         final["ustmc_1day_pct_change_mean"] = final["ustmc"].pct_change().mean()
         final["ustmc_7day_pct_change"] = final["ustmc"].pct_change(7)
-        final["ustmc_7day_pct_change_rank"] = final["ustmc"].pct_change(7).rank(pct=True)
+        final["ustmc_7day_pct_change_rank"] = final["ustmc"].pct_change(7).expanding(30).rank(pct=True)
         final["ustmc_7day_pct_change_mean"] = final["ustmc"].pct_change().mean()
         final["ustmc_1month_pct_change"] = final["ustmc"].pct_change(30)
-        final["ustmc_1month_pct_change_rank"] = final["ustmc"].pct_change(30).rank(pct=True)
+        final["ustmc_1month_pct_change_rank"] = final["ustmc"].pct_change(30).expanding(30).rank(pct=True)
         final["ustmc_1month_pct_change_mean"] = final["ustmc"].pct_change(30).mean()
         final["ustmc_1year_pct_change"] = final["ustmc"].pct_change(365)
-        final["ustmc_1year_pct_change_rank"] = final["ustmc"].pct_change(365).rank(pct=True)
+        final["ustmc_1year_pct_change_rank"] = final["ustmc"].pct_change(365).expanding(30).rank(pct=True)
         final["ustmc_1year_pct_change_mean"] = final["ustmc"].pct_change(365).mean()
 
         # get luna price
@@ -918,7 +918,7 @@ class alphaTerra(object):
         # get luna / ust market cap ratio
         final["luna_ustmc_ratio"] = final["luna_price"] / final["ustmc"]
         # pct rank current ratio
-        final["luna_ustmc_ratio_pct_rank"] = final["luna_ustmc_ratio"].rank(pct=True)
+        final["luna_ustmc_ratio_pct_rank"] = final["luna_ustmc_ratio"].expanding(30).rank(pct=True)
         # historical ratio average
         final["ratio_average"] = final["luna_ustmc_ratio"].mean()
         # luna 1 week returns
@@ -928,11 +928,11 @@ class alphaTerra(object):
         # luna 1 week returns
         final["luna_1year_returns"] = final["luna_price"].pct_change(365)
         # luna 1 week return ranks
-        final["luna_1week_returns_pctrank"] = final["luna_price"].pct_change(7).rank(pct=True)
+        final["luna_1week_returns_pctrank"] = final["luna_price"].pct_change(7).expanding(30).rank(pct=True)
         # luna 1 week returns
-        final["luna_1month_returns_pctrank"] = final["luna_price"].pct_change(30).rank(pct=True)
+        final["luna_1month_returns_pctrank"] = final["luna_price"].pct_change(30).expanding(30).rank(pct=True)
         # luna 1 week returns
-        final["luna_1year_returns_pctrank"] = final["luna_price"].pct_change(365).rank(pct=True)
+        final["luna_1year_returns_pctrank"] = final["luna_price"].pct_change(365).expanding(30).rank(pct=True)
 
         final = final.join(dashboard, how="outer")
 
