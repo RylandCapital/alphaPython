@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     print("Collecting Data")
 
-    schedule.every().day.at("08:05").do(run_threaded, apiUpdate)
+    schedule.every().day.at("06:40").do(run_threaded, apiUpdate)
     schedule.every().minute.at(":00").do(run_threaded, defiData1Job)
     schedule.every().minute.at(":00").do(run_threaded, defiData2Job)
     schedule.every(3).minutes.at(":30").do(run_threaded, defiData3Job)

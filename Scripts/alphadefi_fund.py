@@ -54,7 +54,7 @@ def apiUpdate():
             .reset_index()
             .rename(columns={"index": "token"})
             .set_index("pool")
-        )  # .to_dict()
+        )  
 
         print("running ")
         spreadtracker_data = m.alphatrackerUpdate()
@@ -111,23 +111,17 @@ def apiUpdate():
         print("luna market cap info for Terra Core")
         marketcap_data = m.luna_staking()
 
+        marketcapdf = marketcap_data[0]
+        marketcapdf["id"] = marketcapdf["date"].astype(str) + \
+            marketcapdf["ticker"]
         collection = db.dashboard
-        collection.drop()
+        collection.create_index("id", unique=True)
         time.sleep(2)
-        collection.insert_many(marketcap_data[0].to_dict(orient="records"))
+        collection.insert_many(marketcapdf.groupby(
+            ['ticker']).last().reset_index().to_dict(orient="records"))
 
         collection = db.dashboardDict
         collection.drop()
         time.sleep(2)
         collection.insert_one(marketcap_data[1])
         print("complete")
-
-
-if __name__ == "__main__":
-
-    schedule.every().day.at("08:05").do(apiUpdate)
-
-    print("running")
-    while True:
-        schedule.run_pending()
-        time.sleep(60)

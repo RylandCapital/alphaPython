@@ -975,6 +975,18 @@ class alphaTerra(object):
         final.drop(["UST Price ($)", "UST Circulating Supply ($)", "LUNA Price ($)"], axis=1, inplace=True)
 
         final.columns = [i.replace(" (%)", "") for i in final.columns]
+        
+        final["terraHealth"] = (
+            (
+                final["Daily Registered Accounts Percentile Rank"]
+                + final["Daily UST Transaction Volume Percentile Rank($)"]
+                - final["LUNA UST Market Cap Ratio Percentile Rank"]
+            )
+            / 3
+            * 100
+        )
+        
+        final["terraHealth"] = final["terraHealth"].ffill()
 
         try:
             cmcs = []
@@ -1040,19 +1052,6 @@ class alphaTerra(object):
 
         master = pd.concat(temps)
         master["date"] = master["date"].apply(lambda x: pd.to_datetime(dt.datetime.strftime(x, "%Y-%m-%d")))
-
-        terra_score = master.copy().groupby("ticker")["value"].last()
-        terraHealth = (
-            (
-                terra_score.loc["Daily Registered Accounts Percentile Rank"]
-                + terra_score.loc["Daily UST Transaction Volume Percentile Rank($)"]
-                - terra_score.loc["LUNA UST Market Cap Ratio Percentile Rank"]
-            )
-            / 3
-            * 100
-        )
-
-        master["terraHealth"] = terraHealth
 
         tickers = (
             master[
