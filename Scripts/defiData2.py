@@ -66,13 +66,12 @@ def job():
             """update liquidation stats grid live (1min)"""
             collection = db.liqprofileSTATS
             collection.drop()
-            collection.insert_many(summary.to_dict("rows"))
+            collection.insert_many(summary.to_dict("records"))
 
             """update historical liq profiles every hour on 30 min"""
             if dt.datetime.now().minute == 30:
                 mycol = db["historicalLiqProfiles"]
                 mycol.insert_many(summary.to_dict("records"))
-                print("historical kujira collected : {0}".format(now))
 
             """master apr data and farmers market grid"""
             if dt.datetime.now().minute == 0:
@@ -91,17 +90,17 @@ def job():
                 """drops and replaces farmers market gird data"""
                 collection = db.aprCompare
                 collection.drop()
-                collection.insert_many(final_grid.to_dict(orient="rows"))
+                collection.insert_many(final_grid.to_dict(orient="records"))
 
                 """appends historical data with newest timestamped data"""
                 collection = db.aprs
                 aprs["timestamp"] = pd.to_datetime(aprs["timestamp"])
-                collection.insert_many(aprs.to_dict(orient="rows"))
+                collection.insert_many(aprs.to_dict(orient="records"))
 
             print("data collected at {0}".format(now))
 
         except Exception as e:
-            print(e)
+            print('defiData2 Error', e)
             pass
 
 

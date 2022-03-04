@@ -181,10 +181,9 @@ def job():
                 except Exception as e:
                     errors.append(e)
 
-            print("data collected, with {0} possible duplicates".format(len(errors)))
 
         except Exception as e:
-            print(e)
+            print('defiData3 Error', e)
             pass
 
 

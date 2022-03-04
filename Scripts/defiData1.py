@@ -65,7 +65,6 @@ def job():
 
             eastern = timezone("US/Eastern")
             now = dt.datetime.now(eastern)
-            print(now)
 
             json_data["price"] = json_data["prices"].apply(
                 lambda x: x["price"] if x["price"] is None else float(x["price"])
@@ -116,12 +115,11 @@ def job():
                     mydict = {"date": now, "ust_circulating_supply": supply}
                     mycol.insert_one(mydict)
                 except Exception as e:
-                    print("error collecting UST marketCAP", e)
-
-            print("got mirror data")
+                    pass
 
         except Exception as e:
-            print(e)
+            print('defiData1 Error', e)
+            pass
 
 
 if __name__ == "__main__":
