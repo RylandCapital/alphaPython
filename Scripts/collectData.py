@@ -3,10 +3,7 @@ import time
 import pymongo
 import threading
 
-
 import os
-
-from alphaTerra import alphaTerra
 
 from dotenv import load_dotenv
 
@@ -29,7 +26,7 @@ if __name__ == "__main__":
 
     print("Collecting Data")
 
-    schedule.every().day.at("06:40").do(run_threaded, apiUpdate)
+    schedule.every().day.at("00:00").do(run_threaded, apiUpdate)
     schedule.every().minute.at(":00").do(run_threaded, defiData1Job)
     schedule.every().minute.at(":00").do(run_threaded, defiData2Job)
     schedule.every(3).minutes.at(":30").do(run_threaded, defiData3Job)

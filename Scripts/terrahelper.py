@@ -254,9 +254,6 @@ class terraHelper(object):
         
         req = requests.get('https://assets.terra.money/cw20/pairs.json')
         
-        # for i in pairs.index:
-        #     print(i)
-        
         '''current pairs'''
         names = {
         'terra1zw0kfxrxgrs5l087mjm79hcmj3y8z6tljuhpmc':'LUNA-KRT',
@@ -478,7 +475,6 @@ class terraHelper(object):
         try:
           response = session.get(url, params=parameters)
           ids = json.loads(response.text)
-          print(ids)
         except (ConnectionError, Timeout, TooManyRedirects) as e:
           print(e)
           
@@ -500,7 +496,6 @@ class terraHelper(object):
         try:
           response = session.get(url, params=parameters)
           data = json.loads(response.text)
-          print(data)
         except (ConnectionError, Timeout, TooManyRedirects) as e:
           print(e)
           

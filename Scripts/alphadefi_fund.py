@@ -74,17 +74,19 @@ def apiUpdate():
         print("anchor data")
         anchor_data = m.anchorAPY()
 
-        try:
-            collection = db.HistoricalAnchor
-            anchor_data[0] = anchor_data[0].sort_values("date").iloc[-9:]
-            anchor_data[0]["id"] = anchor_data[0]["date"].astype(str) + anchor_data[0]["ticker"]
-            anchor_data[0]["date"] = pd.to_datetime(anchor_data[0]["date"])
-            collection.create_index("id", unique=True)
-            time.sleep(2)
-            collection.insert_many(anchor_data[0].to_dict(orient="records"))
-        except Exception as e:
-            print(e)
-            pass
+        anchor_data[0] = anchor_data[0].sort_values("date").iloc[-9:]
+        anchor_data[0]["id"] = anchor_data[0]["date"].astype(str) + anchor_data[0]["ticker"]
+        anchor_data[0]["date"] = pd.to_datetime(anchor_data[0]["date"])
+
+        anchordatadf = anchor_data[0].to_dict(orient="records")
+
+        collection = db.HistoricalAnchor
+        collection.create_index("id", unique=True)
+        for i in anchordatadf:
+            try:
+                collection.insert_one(i)
+            except:
+                pass
 
         collection = db.anchor_dict
         collection.drop()
@@ -114,11 +116,15 @@ def apiUpdate():
         marketcapdf = marketcap_data[0]
         marketcapdf["id"] = marketcapdf["date"].astype(str) + \
             marketcapdf["ticker"]
+        marketcapdf = marketcapdf.groupby(
+            ['ticker']).last().reset_index().to_dict(orient="records")
         collection = db.dashboard
         collection.create_index("id", unique=True)
-        time.sleep(2)
-        collection.insert_many(marketcapdf.groupby(
-            ['ticker']).last().reset_index().to_dict(orient="records"))
+        for i in marketcapdf:
+            try:
+                collection.insert_one(i)
+            except:
+                pass
 
         collection = db.dashboardDict
         collection.drop()

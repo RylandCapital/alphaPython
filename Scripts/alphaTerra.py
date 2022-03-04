@@ -189,7 +189,7 @@ class alphaTerra(object):
 
         df["verified0"] = df["asset0"].apply(lambda x: verify(x))
         df["verified1"] = df["asset1"].apply(lambda x: verify(x))
-        df = df[(df["verified0"] == 1) & (df["verified1"] is True)]
+        df = df[(df["verified0"] == True) & (df["verified1"] == True)]
 
         """get decimals"""
         df["decimals0"] = df["asset0"].apply(lambda x: decimals(x)).fillna(6)
@@ -299,7 +299,7 @@ class alphaTerra(object):
         """calculate APRs"""
         df["isStableSwap"] = np.where(df["poolAddy"].isin(stableswaps), True, False)
         df["apr7d"] = np.where(
-            df["isStableSwap"] is False,
+            df["isStableSwap"] == False,
             df["swaprate"] * df["ustPoolVolume7d"] / df["ustLiquidity"] * 52,
             0.00025 * df["ustPoolVolume7d"] / df["ustLiquidity"] * 52,
         )
@@ -380,21 +380,21 @@ class alphaTerra(object):
                         row.loc["ustPoolVolume7d", "Astroport"] / row.loc["ustPoolVolume7d"].sum()
                     )
                 except:
-                    print("no astroport")
+                    pass
 
                 try:
                     row.loc["apr7d", "Terraswap Volume Dominance"] = (
                         row.loc["ustPoolVolume7d", "Terraswap"] / row.loc["ustPoolVolume7d"].sum()
                     )
                 except:
-                    print("no terraswap")
+                    pass
 
                 try:
                     row.loc["apr7d", "Loop Volume Dominance"] = (
                         row.loc["ustPoolVolume7d", "Loop"] / row.loc["ustPoolVolume7d"].sum()
                     )
                 except:
-                    print("no loop")
+                    pass
 
                 row.loc[:, "Symbol"] = sym
 
@@ -540,7 +540,6 @@ class alphaTerra(object):
                     amount_current2 = float(json.loads(req2.text)["result"]["total_supply"][:-6])
 
                 except:
-                    print("there is an error")
                     pass
 
                 if (ts != amount_current) & (amount_current == amount_current2):
@@ -595,7 +594,6 @@ class alphaTerra(object):
                     amount_current2 = float(json.loads(req2.text)["result"]["total_supply"][:-6])
 
                 except:
-                    print("there is an error")
                     pass
 
                 if (ts != amount_current) & (amount_current == amount_current2):
@@ -677,7 +675,6 @@ class alphaTerra(object):
                     amount_current2 = float(json.loads(req2.text)["result"]["prev_interest_buffer"][:-6])
 
                 except:
-                    print("there is an error")
                     pass
 
                 if (ib != amount_current) & (amount_current == amount_current2):
@@ -805,8 +802,6 @@ class alphaTerra(object):
             data = l["data"]
             for d in data:
                 timestamp = d["datetime"]
-                print(timestamp)
-                print(symbol)
                 df.loc[timestamp, "timestamp"] = d["datetime"]
                 df.loc[timestamp, "transaction_volume"] = float(d["txVolume"]) / 1000000
                 df.loc[timestamp, "symbol"] = symbol
