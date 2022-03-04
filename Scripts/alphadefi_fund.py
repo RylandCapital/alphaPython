@@ -125,3 +125,6 @@ def apiUpdate():
         time.sleep(2)
         collection.insert_one(marketcap_data[1])
         print("complete")
+
+if __name__ == "__main__":
+    apiUpdate()
