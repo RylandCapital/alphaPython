@@ -175,7 +175,7 @@ def job():
             collection = db.kujiraLiquidations
             collection.create_index("id", unique=True)
             errors = []
-            for document in liquidations.to_dict("rows"):
+            for document in liquidations.to_dict("records"):
                 try:
                     collection.insert_one(document)
                 except Exception as e:

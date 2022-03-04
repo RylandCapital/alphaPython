@@ -97,8 +97,6 @@ def job():
                 aprs["timestamp"] = pd.to_datetime(aprs["timestamp"])
                 collection.insert_many(aprs.to_dict(orient="records"))
 
-            print("data collected at {0}".format(now))
-
         except Exception as e:
             print('defiData2 Error', e)
             pass
