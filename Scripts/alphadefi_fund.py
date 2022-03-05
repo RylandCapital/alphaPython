@@ -44,27 +44,8 @@ def apiUpdate():
             except Exception as e:
                 errors.append(e)
 
-        """update terraswap comission aprs modules drop down menu 
-        and huistorical volatilties and statistics of aprs"""
-        # believe this is deprecated. can remove once confirmed.
-        pool_dict = (
-            pd.DataFrame(terraHelper.terra_pairs_names(), index=np.arange(len(terraHelper.terra_pairs_names())))
-            .T[[0]]
-            .rename(columns={0: "pool"})
-            .reset_index()
-            .rename(columns={"index": "token"})
-            .set_index("pool")
-        )  
-
         print("running ")
         spreadtracker_data = m.alphatrackerUpdate()
-
-        collection = db.spreadHISTSTATS
-        collection.drop()
-        time.sleep(2)
-        collection.insert_many(
-            spreadtracker_data[0][spreadtracker_data[0].index != "MIR"].reset_index().to_dict(orient="rows")
-        )
 
         collection = db.tokenDICT
         collection.drop()

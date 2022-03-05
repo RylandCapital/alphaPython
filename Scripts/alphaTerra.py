@@ -712,12 +712,18 @@ class alphaTerra(object):
 
         """Update mSpreads Rolling 30 Day and Symbol Dict for SpreadTracker"""
         raw, ss = self.mirrorSpreadStats(30)
+
         pcts = (
             pd.DataFrame(raw.groupby("symbol")["spread"].quantile(0.05))
             .rename(columns={"spread": "Historical 5th % Spread"})
             .join(
                 pd.DataFrame(raw.groupby("symbol")["spread"].quantile(0.95)).rename(
                     columns={"spread": "Historical 95th % Spread"}
+                )
+            )
+            .join(
+                pd.DataFrame(raw.groupby("symbol")["spread"].last()).rename(
+                    columns={"spread": "Current (1Min Updated)"}
                 )
             )
         )

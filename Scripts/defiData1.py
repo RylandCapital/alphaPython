@@ -11,6 +11,8 @@ from pytz import timezone
 
 from dotenv import load_dotenv
 
+from alphaTerra import alphaTerra
+
 from contextlib import redirect_stdout
 from printPrepender import PrintPrepender
 
@@ -116,6 +118,15 @@ def job():
                     mycol.insert_one(mydict)
                 except Exception as e:
                     pass
+
+            spreadtracker_data = alphaTerra().alphatrackerUpdate()
+
+            collection = db.spreadHISTSTATS
+            collection.drop()
+            time.sleep(2)
+            collection.insert_many(
+                spreadtracker_data[0][spreadtracker_data[0].index != "MIR"].reset_index().to_dict(orient="records")
+            )
 
         except Exception as e:
             print('defiData1 Error', e)
