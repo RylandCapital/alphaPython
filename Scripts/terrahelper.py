@@ -395,7 +395,14 @@ class terraHelper(object):
                      'dcaqxkpc5ce9qee5ggqf430mr2z3pefe5wj6/store?query_m'+\
                      'sg={%22pool%22:{}}')
         return int(req.json()['height'])
-    
+     
+    def getBlockTimestamp(height=""):
+
+        value = requests.get("https://lcd.terra.dev/blocks/{1}".replace("{1}", str(height))).json()["block"]["header"][
+                "time"
+            ]
+        
+        return value
     def terra_current_timestamp():
         req = requests.get('https://api.anchorprotocol.com/api/v1/market/ust')
         
