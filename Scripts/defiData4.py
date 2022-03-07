@@ -137,16 +137,23 @@ def job():
                 ).json()['stluna']
             )/100
 
-            df.reset_index(inplace=True)
-            df.rename(columns={
-                'index':'collected_date'
-            }, inplace=True)
 
-            stakedict = df.to_dict('records')[0]
+            temps = []
+            for i in df.columns:
+                temp = pd.DataFrame([], columns=['date', 'ticker', 'value'])
+                temp.loc[0,'ticker'] = i
+                temp.loc[0,'value'] = df[[i]].copy().iloc[0,0]
+                temp.loc[0,'date'] = df[[i]].copy().index[0]
+                temps.append(temp)
+
+            
+            df = pd.concat(temps)
+
+            
+            stakedict = df.to_dict('records')
             
             collection = db.liquidStaking
-            collection.create_index("collected_date", unique=True)
-            collection.insert_one(stakedict)
+            collection.insert_many(stakedict)
 
         except Exception as e:
             print(e)
