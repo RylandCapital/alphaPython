@@ -7,6 +7,7 @@ import requests
 import numpy as np
 import os
 from pytz import timezone
+import json
 
 from terrahelper import terraHelper
 
@@ -36,7 +37,7 @@ def job():
             '''define date'''
             eastern = timezone("US/Eastern")
             now = dt.datetime.now(eastern)
-            today = now.strftime("%Y-%m-%d")
+            today = (now - dt.timedelta(days=1)).strftime("%Y-%m-%d")
             tomorrow = (now + dt.timedelta(days=1)).strftime("%Y-%m-%d")
 
             '''collect data'''
@@ -97,15 +98,25 @@ def job():
             df['Stader_LunaX_APR'] = (
                 df['Stader_LunaX_Exrate']/df['Stader_LunaX_Exrate_100k_Blocks_Ago']
                 )**(365/days_between_blocks)-1
+
+            url = "https://api.nexusprotocol.app/graphql"
+
+            query = """ {
+                getBAssetVaultAprRecords(limit: 1, offset: 0) {
+                    date
+                    bEthVaultApr
+                    bEthVaultManualApr
+                    bLunaVaultApr
+                    bLunaVaultManualApr
+                }
+                }"""
+            r = requests.post(url, json={"query": query})
+            hd = json.loads(r.text)["data"]["getBAssetVaultAprRecords"]
             
             df.loc[now, 'Nexus_nLuna_APR'] = float(
-                requests.get(
-                "https://api.alphadefi.fund/historical/nexus/bLunaVaultApr?from={0}&to={1}".format(
-                    today,
-                    tomorrow
-                )
-                )
-                .json()[0]['value']
+
+                hd[0]['bLunaVaultApr']
+
             )/100
 
             df.loc[now, 'Prism_yLuna_APR'] = float(

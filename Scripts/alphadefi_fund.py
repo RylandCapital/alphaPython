@@ -44,7 +44,7 @@ def apiUpdate():
             except Exception as e:
                 errors.append(e)
 
-        print("running ")
+     
         spreadtracker_data = m.alphatrackerUpdate()
 
         collection = db.tokenDICT
@@ -52,14 +52,14 @@ def apiUpdate():
         time.sleep(2)
         collection.insert_one(spreadtracker_data[1])
 
-        print("anchor data")
+      
         anchor_data = m.anchorAPY()
 
         anchor_data[0] = anchor_data[0].sort_values("date").iloc[-9:]
         anchor_data[0]["id"] = anchor_data[0]["date"].astype(str) + anchor_data[0]["ticker"]
         anchor_data[0]["date"] = pd.to_datetime(anchor_data[0]["date"])
 
-        anchordatadf = anchor_data[0].to_dict(orient="records")
+        anchordatadf = anchor_data[0].to_dict("records")
 
         collection = db.HistoricalAnchor
         collection.create_index("id", unique=True)
@@ -88,17 +88,16 @@ def apiUpdate():
         collection = db.nexusVaults
         collection.create_index("id", unique=True)
         time.sleep(2)
-        collection.insert_many(nexusdf.to_dict(orient="records"))
+        collection.insert_many(nexusdf.to_dict("records"))
 
-        print("terra core")
-        print("luna market cap info for Terra Core")
+ 
         marketcap_data = m.luna_staking()
 
         marketcapdf = marketcap_data[0]
         marketcapdf["id"] = marketcapdf["date"].astype(str) + \
             marketcapdf["ticker"]
         marketcapdf = marketcapdf.groupby(
-            ['ticker']).last().reset_index().to_dict(orient="records")
+            ['ticker']).last().reset_index().to_dict("records")
         collection = db.dashboard
         collection.create_index("id", unique=True)
         for i in marketcapdf:
@@ -111,7 +110,7 @@ def apiUpdate():
         collection.drop()
         time.sleep(2)
         collection.insert_one(marketcap_data[1])
-        print("complete")
+      
 
 if __name__ == "__main__":
     apiUpdate()

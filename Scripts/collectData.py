@@ -33,7 +33,7 @@ if __name__ == "__main__":
     schedule.every().minute.at(":00").do(run_threaded, defiData1Job)
     schedule.every().minute.at(":00").do(run_threaded, defiData2Job)
     schedule.every(3).minutes.at(":30").do(run_threaded, defiData3Job)
-    schedule.every(5).minutes.at(":00").do(run_threaded, defiData4Job)
+    schedule.every(5).minutes.at(":15").do(run_threaded, defiData4Job)
 
     while True:
         schedule.run_pending()
