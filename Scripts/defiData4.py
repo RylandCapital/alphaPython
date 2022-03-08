@@ -138,6 +138,7 @@ def job():
             blankdict = {}
             names = list(df.to_dict('records')[0].keys())
             names.remove('Legacy_Staking_TerraStation_Value_Date')
+            names.remove('Stader_LunaX_Exrate')
             for i in names:
                 blankdict[i] = i
             liqDict = {"token": blankdict}
