@@ -45,8 +45,6 @@ def job():
             'Legacy_Staking_TerraStation_APR',
             'Legacy_Staking_TerraStation_Value_Date',
             'Stader_LunaX_Exrate',
-            'Stader_LunaX_Exrate_100k_Blocks_Ago',
-            'Stader_LunaX_APR',
             'Nexus_nLuna_APR',
             'Prism_yLuna_APR',
             'Anchor_bLuna_APR',
@@ -74,8 +72,8 @@ def job():
                 .json()['query_result']['state']['exchange_rate']
             )
 
-            #get current and past block
-            block = terraHelper.terra_current_block()-100000
+            '''#get current and past block
+            block = terraHelper.terra_current_block()
             blockpast = block-100000
 
             blockpast_date = pd.to_datetime(
@@ -87,17 +85,16 @@ def job():
                             24 * 60 * 60)
 
             df.loc[now, 'Stader_LunaX_Exrate_100k_Blocks_Ago'] = float(
-                requests.get(
-                "https://fcd.terra.dev/terra/wasm/v1beta1/contracts/terra1xacqx447msqp46qmv8k2sq6v5jh9fdj37az898/store?query_msg=eyJzdGF0ZSI6e319&height={0}".format(
+            requests.get(
+                "https://fcd.terra.dev/terra/wasm/v1beta1/contracts/terra1xacqx447msqp46qmv8k2sq6v5jh9fdj37az898/store?query_msg=eyJzdGF0ZSI6e319&height=6663986".format(
                     blockpast
                 )
-                )
-                .json()['query_result']['state']['exchange_rate']
+                ).json()['query_result']['state']['exchange_rate']
             )
 
             df['Stader_LunaX_APR'] = (
                 df['Stader_LunaX_Exrate']/df['Stader_LunaX_Exrate_100k_Blocks_Ago']
-                )**(365/days_between_blocks)-1
+                )**(365/days_between_blocks)-1'''
 
             url = "https://api.nexusprotocol.app/graphql"
 
