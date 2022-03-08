@@ -134,6 +134,18 @@ def job():
                 ).json()['stluna']
             )/100
 
+            #make dictionary for drop down options on app. 
+            blankdict = {}
+            names = list(df.to_dict('records')[0].keys())
+            names.remove('Legacy_Staking_TerraStation_Value_Date')
+            for i in names:
+                blankdict[i] = i
+            liqDict = {"token": blankdict}
+
+            collection = db.liqStakingDict
+            collection.drop()
+            time.sleep(2)
+            collection.insert_one(liqDict)
 
             temps = []
             for i in df.columns:
@@ -142,16 +154,16 @@ def job():
                 temp.loc[0,'value'] = df[[i]].copy().iloc[0,0]
                 temp.loc[0,'date'] = df[[i]].copy().index[0]
                 temps.append(temp)
-
-            
+ 
             df = pd.concat(temps)
 
-            
             stakedict = df.to_dict('records')
             
             collection = db.liquidStaking
             collection.insert_many(stakedict)
 
+
+            
         except Exception as e:
             print(e)
 

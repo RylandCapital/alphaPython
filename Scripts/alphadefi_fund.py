@@ -113,25 +113,6 @@ def apiUpdate():
         time.sleep(2)
         collection.insert_one(marketcap_data[1])
 
-
-        liquid_staking = list(requests.get(
-            'https://api.alphadefi.fund/historical/liquidstaking/?to=2022-03-07&from=2022-03-06&precision=day'
-            ).json()[0].keys())
-        for i in ['date','_id','Legacy_Staking_TerraStation_Value_Date','Stader_LunaX_Exrate','Stader_LunaX_Exrate_100k_Blocks_Ago']:
-            liquid_staking.remove(i)
-        blankdict = {}
-        for i in liquid_staking:
-            blankdict[i] = i
-        liqDict = {"token": blankdict}
-
-
-        collection = db.liqStakingDict
-        collection.drop()
-        time.sleep(2)
-        collection.insert_one(liqDict)
         
-        
-      
-
 if __name__ == "__main__":
     apiUpdate()
