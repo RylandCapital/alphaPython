@@ -1,6 +1,5 @@
 import schedule
 import time
-import pymongo
 import threading
 import warnings
 
