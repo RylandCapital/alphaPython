@@ -164,7 +164,9 @@ class alphaTerra(object):
             except:
                 pass
 
-        fees = {"Terraswap": 0.003, "Astroport": 0.002, "TerraFloki": 0.003, "Loop": 0.003, "Terraformer": 0.003}
+        fees = {"Terraswap": 0.003, "Astroport": 0.002, "TerraFloki": 0.003, "Loop": 0.003, "Terraformer": 0.003,
+        'PRISM Swap':0.003
+        }
 
         stableswaps = ["terra1j66jatn3k50hjtg2xemnjm8s7y8dws9xqa5y8w"]
 
@@ -185,7 +187,7 @@ class alphaTerra(object):
                 pass
 
         """Terraswap, Astrport, and Loop Only"""
-        df = df[df["dex"].isin(["Terraswap", "Astroport", "Loop"])]
+        df = df[df["dex"].isin(["Terraswap", "Astroport", "Loop", 'PRISM Swap'])]
 
         df["verified0"] = df["asset0"].apply(lambda x: verify(x))
         df["verified1"] = df["asset1"].apply(lambda x: verify(x))

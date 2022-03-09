@@ -83,7 +83,7 @@ def job():
                 collection = db.dexpoolDICT
                 collection.drop()
                 blankdict = {}
-                for i in ["Terraswap", "Astroport", "Loop"]:
+                for i in ["Terraswap", "Astroport", "Loop", "PRISM Swap"]:
                     blankdict[i] = aprs[aprs["dex"] == i]["masterSymbol"].unique().tolist()
                 collection.insert_one({"dex": blankdict})
 
