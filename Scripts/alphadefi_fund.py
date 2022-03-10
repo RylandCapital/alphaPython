@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import requests
 import time
 import pymongo
 
@@ -57,7 +56,7 @@ def apiUpdate():
       
         anchor_data = m.anchorAPY()
 
-        anchor_data[0] = anchor_data[0].sort_values("date").iloc[-9:]
+        anchor_data[0] = anchor_data[0].sort_values("date").iloc[-100:]
         anchor_data[0]["id"] = anchor_data[0]["date"].astype(str) + anchor_data[0]["ticker"]
         anchor_data[0]["date"] = pd.to_datetime(anchor_data[0]["date"])
 
