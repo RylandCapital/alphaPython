@@ -47,7 +47,7 @@ query = """{
 url = "https://graph.mirror.finance/graphql"
 
 """define database"""
-client = pymongo.MongoClient(ALPHADEFI_MONGO, ssl=True, ssl_cert_reqs="CERT_NONE")
+client = pymongo.MongoClient(ALPHADEFI_MONGO)
 db = client.alphaDefi
 
 
@@ -129,7 +129,7 @@ def job():
             )
 
         except Exception as e:
-            print('defiData1 Error', e)
+            print("defiData1 Error", e)
             pass
 
 

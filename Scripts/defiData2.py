@@ -18,7 +18,7 @@ load_dotenv()
 ALPHADEFI_MONGO = os.getenv("ALPHADEFI_MONGO")
 
 """define database"""
-client = pymongo.MongoClient(ALPHADEFI_MONGO, ssl=True, ssl_cert_reqs="CERT_NONE")
+client = pymongo.MongoClient(ALPHADEFI_MONGO)
 db = client.alphaDefi
 
 
@@ -98,7 +98,7 @@ def job():
                 collection.insert_many(aprs.to_dict(orient="records"))
 
         except Exception as e:
-            print('defiData2 Error', e)
+            print("defiData2 Error", e)
             pass
 
 

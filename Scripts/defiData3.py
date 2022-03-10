@@ -20,7 +20,7 @@ ALPHADEFI_MONGO = os.getenv("ALPHADEFI_MONGO")
 
 
 """define database"""
-client = pymongo.MongoClient(ALPHADEFI_MONGO, ssl=True, ssl_cert_reqs="CERT_NONE")
+client = pymongo.MongoClient(ALPHADEFI_MONGO)
 db = client.alphaDefi
 
 collateral_dict = {
@@ -181,9 +181,8 @@ def job():
                 except Exception as e:
                     errors.append(e)
 
-
         except Exception as e:
-            print('defiData3 Error', e)
+            print("defiData3 Error", e)
             pass
 
 
