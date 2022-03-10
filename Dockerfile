@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY Scripts/requirements.txt requirements.txt
 RUN pip install -r requirements.txt
+COPY start.sh start.sh
 COPY . .
 
-CMD ["python", "Scripts/collectData.py"]
+ENTRYPOINT ["./start.sh"]
