@@ -13,11 +13,6 @@ from defiData2 import job as defiData2Job
 from defiData3 import job as defiData3Job
 from defiData4 import job as defiData4Job
 
-load_dotenv()
-
-ALPHADEFI_MONGO = os.getenv("ALPHADEFI_MONGO")
-print("ALPHADEFI_MONGO", ALPHADEFI_MONGO)
-
 warnings.filterwarnings("ignore")
 
 

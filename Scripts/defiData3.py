@@ -20,7 +20,9 @@ ALPHADEFI_MONGO = os.getenv("ALPHADEFI_MONGO")
 
 
 """define database"""
-client = pymongo.MongoClient(ALPHADEFI_MONGO)
+client = pymongo.MongoClient(ALPHADEFI_MONGO,
+ssl=True,
+ssl_cert_reqs='CERT_NONE')
 db = client.alphaDefi
 
 collateral_dict = {
