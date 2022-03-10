@@ -21,7 +21,7 @@ m = alphaTerra()
 
 
 """define database"""
-client = pymongo.MongoClient(ALPHADEFI_MONGO, ssl=True, ssl_cert_reqs="CERT_NONE")
+client = pymongo.MongoClient(ALPHADEFI_MONGO)
 db = client.alphaDefi
 
 
@@ -29,9 +29,9 @@ def apiUpdate():
     """update coin marketcaps required for other updates below"""
     buf = PrintPrepender("[API-Update]: ")
     with redirect_stdout(buf):
-        
+
         print("Starting job")
-        
+
         collection = db.coinmarketcaps
         collection.create_index("id", unique=True)
         coincaps = terraHelper.coinmarketcaps()
@@ -45,7 +45,6 @@ def apiUpdate():
             except Exception as e:
                 errors.append(e)
 
-     
         spreadtracker_data = m.alphatrackerUpdate()
 
         collection = db.tokenDICT
@@ -53,7 +52,6 @@ def apiUpdate():
         time.sleep(2)
         collection.insert_one(spreadtracker_data[1])
 
-      
         anchor_data = m.anchorAPY()
 
         anchor_data[0] = anchor_data[0].sort_values("date").iloc[-100:]
@@ -91,14 +89,11 @@ def apiUpdate():
         time.sleep(2)
         collection.insert_many(nexusdf.to_dict("records"))
 
- 
         marketcap_data = m.luna_staking()
 
         marketcapdf = marketcap_data[0]
-        marketcapdf["id"] = marketcapdf["date"].astype(str) + \
-            marketcapdf["ticker"]
-        marketcapdf = marketcapdf.groupby(
-            ['ticker']).last().reset_index().to_dict("records")
+        marketcapdf["id"] = marketcapdf["date"].astype(str) + marketcapdf["ticker"]
+        marketcapdf = marketcapdf.groupby(["ticker"]).last().reset_index().to_dict("records")
         collection = db.dashboard
         collection.create_index("id", unique=True)
         for i in marketcapdf:
@@ -112,6 +107,6 @@ def apiUpdate():
         time.sleep(2)
         collection.insert_one(marketcap_data[1])
 
-        
+
 if __name__ == "__main__":
     apiUpdate()
