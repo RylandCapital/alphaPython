@@ -16,8 +16,10 @@ from defiData4 import job as defiData4Job
 load_dotenv()
 
 ALPHADEFI_MONGO = os.getenv("ALPHADEFI_MONGO")
+print("ALPHADEFI_MONGO", ALPHADEFI_MONGO)
 
 warnings.filterwarnings("ignore")
+
 
 def run_threaded(job_func):
     job_thread = threading.Thread(target=job_func)
