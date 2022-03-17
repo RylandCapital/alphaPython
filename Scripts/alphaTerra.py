@@ -140,15 +140,6 @@ class alphaTerra(object):
 
         return json_data
 
-    def getBlockTimestamp(self, height=""):
-
-        value = pd.to_datetime(
-            requests.get("https://lcd.terra.dev/blocks/{1}".replace("{1}", str(height))).json()["block"]["header"][
-                "time"
-            ]
-        )
-        return value
-
     def masterAPR(self):
         def decimals(x):
             try:
@@ -351,16 +342,35 @@ class alphaTerra(object):
                 "masterSymbol",
                 "symbol0",
                 "symbol1",
+                "poolPrice",
                 "ustPoolVolume7d",
                 "apr7d",
             ]
         ]
         ts.set_index("masterSymbol", inplace=True)
         astro = final[final["dex"] == "Astroport"][
-            ["dex", "masterSymbol", "symbol0", "symbol1", "ustPoolVolume7d", "apr7d"]
+            [
+             "dex",
+             "masterSymbol",
+             "symbol0",
+             "symbol1",
+             "poolPrice",
+             "ustPoolVolume7d",
+             "apr7d"
+            ]
         ]
         astro.set_index("masterSymbol", inplace=True)
-        loop = final[final["dex"] == "Loop"][["dex", "masterSymbol", "symbol0", "symbol1", "ustPoolVolume7d", "apr7d"]]
+        loop = final[final["dex"] == "Loop"][
+            [
+             "dex",
+             "masterSymbol",
+             "symbol0",
+             "symbol1",
+             "poolPrice",
+             "ustPoolVolume7d",
+             "apr7d"
+            ]
+        ]
         loop.set_index("masterSymbol", inplace=True)
 
         grid = pd.concat([ts, astro, loop]).sort_index().reset_index()
@@ -372,7 +382,7 @@ class alphaTerra(object):
             dup_check = grid.loc[i]["dex"].value_counts().max()
 
             if dup_check < 2:
-                row = grid.loc[i].T.loc[["dex", "apr7d", "ustPoolVolume7d"]]
+                row = grid.loc[i].T.loc[["dex", "apr7d", "ustPoolVolume7d", "poolPrice"]]
                 sym = row.columns[0]
                 row.columns = row.loc["dex"].values
                 row.drop("dex", axis=0, inplace=True)
@@ -398,13 +408,80 @@ class alphaTerra(object):
                 except:
                     pass
 
+                try:
+                    row.loc["apr7d", "Astroport Volume"] = (
+                        row.loc["ustPoolVolume7d", "Astroport"]
+                    )
+                except:
+                    pass
+
+                try:
+                    row.loc["apr7d", "Terraswap Volume"] = (
+                        row.loc["ustPoolVolume7d", "Terraswap"]
+                    )
+                except:
+                    pass
+
+                try:
+                    row.loc["apr7d", "Loop Volume"] = (
+                        row.loc["ustPoolVolume7d", "Loop"]
+                    )
+                except:
+                    pass
+
+                try:
+                    row.loc["apr7d", "Astroport Price"] = (
+                        row.loc["poolPrice", "Astroport"]
+                    )
+                except:
+                    pass
+
+                try:
+                    row.loc["apr7d", "Terraswap Price"] = (
+                        row.loc["poolPrice", "Terraswap"]
+                    )
+                except:
+                    pass
+
+                try:
+                    row.loc["apr7d", "Loop Price"] = (
+                        row.loc["poolPrice", "Loop"]
+                    )
+                except:
+                    pass
+
                 row.loc[:, "Symbol"] = sym
 
                 grids.append(pd.DataFrame(row.iloc[0]).T)
 
         final_grid = pd.concat(grids)
-        final_grid = final_grid[list(final_grid.columns.drop("Symbol")) + ["Symbol"]]
-        final_grid.iloc[:, :-1] = (final_grid.iloc[:, :-1].astype(float) * 100).round(2)
+
+
+        final_grid = final_grid[
+            [
+                "Symbol",
+                "Terraswap",
+                "Astroport",
+                "Loop",
+                "Terraswap Volume Dominance",
+                "Astroport Volume Dominance",
+                "Loop Volume Dominance",
+                "Terraswap Volume",
+                "Astroport Volume",
+                "Loop Volume",
+                "Terraswap Price",
+                "Astroport Price",
+                "Loop Price"
+            ]
+        ]
+
+        final_grid.iloc[:, 1:-6] = (final_grid.iloc[:, 1:-6].astype(float) * 100).round(2)
+
+        final_grid['Top Arb Opportunity'] = (final_grid[
+            ['Terraswap Price', 'Astroport Price', 'Loop Price']
+            ].apply(lambda x: x.max(), axis=1) / final_grid[
+            ['Terraswap Price', 'Astroport Price', 'Loop Price']
+            ].apply(lambda x: x.min(), axis=1)-1)*100
         final_grid = final_grid.reset_index(drop=True)
 
         final_grid["timestamp"] = dt.datetime.now().strftime("%m/%d/%Y %H:%M:%S")
@@ -413,7 +490,14 @@ class alphaTerra(object):
 
     def anchorAPY(self):
 
-        # today = (dt.datetime.now() + dt.timedelta(days=1)).strftime("%Y-%m-%d")
+        def getBlockTimestamp(height=""):
+
+            value = pd.to_datetime(
+                requests.get("https://lcd.terra.dev/blocks/{1}".replace("{1}", str(height))).json()["block"]["header"][
+                    "time"
+                ]
+            )
+            return value
 
         anchor_data = []
 
@@ -552,7 +636,7 @@ class alphaTerra(object):
                     df.loc[height, "total_supply"] = ts
 
         epoch = pd.to_datetime(dt.datetime.utcfromtimestamp(0), utc=True)
-        df["date"] = df["height"].apply(lambda x: int((self.getBlockTimestamp(x) - epoch).total_seconds() * 1000))
+        df["date"] = df["height"].apply(lambda x: int((getBlockTimestamp(x) - epoch).total_seconds() * 1000))
 
         df.rename(columns={"total_supply": "apr"}, inplace=True)
         df["timestamp"] = df["date"].apply(lambda x: dt.datetime.utcfromtimestamp(x // 1000))
@@ -606,7 +690,7 @@ class alphaTerra(object):
                     df.loc[height, "total_supply"] = ts
 
         epoch = pd.to_datetime(dt.datetime.utcfromtimestamp(0), utc=True)
-        df["date"] = df["height"].apply(lambda x: int((self.getBlockTimestamp(x) - epoch).total_seconds() * 1000))
+        df["date"] = df["height"].apply(lambda x: int((getBlockTimestamp(x) - epoch).total_seconds() * 1000))
 
         df.rename(columns={"total_supply": "apr"}, inplace=True)
         df["timestamp"] = df["date"].apply(lambda x: dt.datetime.utcfromtimestamp(x // 1000))
@@ -688,7 +772,7 @@ class alphaTerra(object):
 
         epoch = pd.to_datetime(dt.datetime.utcfromtimestamp(0), utc=True)
 
-        df["date"] = df["height"].apply(lambda x: int((self.getBlockTimestamp(x) - epoch).total_seconds() * 1000))
+        df["date"] = df["height"].apply(lambda x: int((getBlockTimestamp(x) - epoch).total_seconds() * 1000))
 
         df.rename(columns={"interest_buffer": "apr"}, inplace=True)
         df["timestamp"] = df["date"].apply(lambda x: dt.datetime.utcfromtimestamp(x / 1000))
@@ -892,7 +976,7 @@ class alphaTerra(object):
         df.index = pd.to_datetime(df.index).date
 
         final = df.join(mc, how="outer")
-        final["ustmc"] = final["close"] * final["value"]
+        final["ustmc"] = (final["close"].ffill() * final["value"])
         final["ustmc_1day_pct_change"] = final["ustmc"].pct_change()
         final["ustmc_1day_pct_change_rank"] = final["ustmc"].pct_change().expanding(30).rank(pct=True)
         final["ustmc_1day_pct_change_mean"] = final["ustmc"].pct_change().mean()
@@ -914,9 +998,13 @@ class alphaTerra(object):
         df = pd.DataFrame.from_dict(req.json()).set_index("date")[["close"]]
         df.index = pd.to_datetime(df.index).date
 
+        latest_luna = terraHelper.coinhall_terra_latest_prices()['terra1tndcaqxkpc5ce9qee5ggqf430mr2z3pefe5wj6']
+
         final.rename(columns={"close": "ust_price"}, inplace=True)
-        final = final.join(df, how="inner")
+        final = final.join(df, how="outer")
         final.rename(columns={"close": "luna_price"}, inplace=True)
+
+        final['luna_price'].iloc[-1] = latest_luna
 
         # get luna / ust market cap ratio
         final["luna_ustmc_ratio"] = final["luna_price"] / final["ustmc"]
