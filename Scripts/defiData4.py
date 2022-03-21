@@ -64,35 +64,21 @@ def job():
                 requests.get("https://fcd.terra.dev/v1/dashboard/staking_return").json()[-1]["datetime"] / 1000
             )
 
+            #continue logging Stader price
             df.loc[now, "Stader_LunaX_Exrate"] = float(
                 requests.get(
                     "https://fcd.terra.dev/terra/wasm/v1beta1/contracts/terra1xacqx447msqp46qmv8k2sq6v5jh9fdj37az898/store?query_msg=eyJzdGF0ZSI6e319"
                 ).json()["query_result"]["state"]["exchange_rate"]
             )
 
-            """#get current and past block
-            block = terraHelper.terra_current_block()
-            blockpast = block-100000
+            #pull historical from our API
+            sdf = pd.DataFrame(requests.get('https://api.alphadefi.fund/historical/liquidstaking/Stader_LunaX_Exrate/?precision=day').json())
+            sdf['Stader_LunaX_APR'] = (
+                sdf['value']/sdf['value'].shift(7)
+                )**(365/7)-1
 
-            blockpast_date = pd.to_datetime(
-                    terraHelper.getBlockTimestamp(
-                    height=blockpast
-                    )
-                ).to_pydatetime()
-            days_between_blocks = (now - blockpast_date).total_seconds()/(
-                            24 * 60 * 60)
-
-            df.loc[now, 'Stader_LunaX_Exrate_100k_Blocks_Ago'] = float(
-            requests.get(
-                "https://fcd.terra.dev/terra/wasm/v1beta1/contracts/terra1xacqx447msqp46qmv8k2sq6v5jh9fdj37az898/store?query_msg=eyJzdGF0ZSI6e319&height=6663986".format(
-                    blockpast
-                )
-                ).json()['query_result']['state']['exchange_rate']
-            )
-
-            df['Stader_LunaX_APR'] = (
-                df['Stader_LunaX_Exrate']/df['Stader_LunaX_Exrate_100k_Blocks_Ago']
-                )**(365/days_between_blocks)-1"""
+            #create APR 7-Day from prices
+            df['Stader_LunaX_APR'] = float(sdf['Stader_LunaX_APR'].iloc[-1])
 
             url = "https://api.nexusprotocol.app/graphql"
 

@@ -54,8 +54,7 @@ def apiUpdate():
         time.sleep(2)
         collection.insert_one(spreadtracker_data[1])
 
-        anchor_data = m.anchorAPY()
-
+        anchor_data = m.anchorAPY()  
         anchor_data[0] = anchor_data[0].sort_values("date").iloc[-100:]
         anchor_data[0]["id"] = anchor_data[0]["date"].astype(str) + anchor_data[0]["ticker"]
         anchor_data[0]["date"] = pd.to_datetime(anchor_data[0]["date"])
