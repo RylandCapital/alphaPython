@@ -118,7 +118,7 @@ def apiUpdate():
         )
         df['date'] = pd.to_datetime(df['DATES2'].astype(str) + '-' + df['DATES'].astype(str) + '-' + '1')
         df["id"] = df["date"].astype(str)
-        df.drop(['DATES', 'DATES2'], axis=1)
+        df = df.drop(['DATES', 'DATES2'], axis=1)
         df = df.sort_values('date')
 
         collection = db.txFailRate
