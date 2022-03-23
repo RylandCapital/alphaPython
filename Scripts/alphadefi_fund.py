@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import time
 import pymongo
+import requests
 
 import os
 
@@ -107,6 +108,24 @@ def apiUpdate():
         collection.drop()
         time.sleep(2)
         collection.insert_one(marketcap_data[1])
+
+
+        #flipside daily data
+        df = pd.DataFrame(
+                requests.get(
+                'https://api.flipsidecrypto.com/api/v2/queries/090ab251-7160-46da-ba84-5100e3ec7623/data/latest'
+            ).json()
+        )
+        df['date'] = pd.to_datetime(df['DATES2'].astype(str) + '-' + df['DATES'].astype(str) + '-' + '1')
+        df["id"] = df["date"].astype(str)
+        df.drop(['DATES', 'DATES2'], axis=1)
+        df = df.sort_values('date')
+
+        collection = db.txFailRate
+        collection.create_index("id", unique=True)
+        collection.drop()
+        time.sleep(2)
+        collection.insert_many(df.to_dict("records"))
 
 
 if __name__ == "__main__":
