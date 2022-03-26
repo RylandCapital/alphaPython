@@ -28,6 +28,7 @@ db = client.alphaDefi
 collateral_dict = {
     "terra1dzhzukyezv0etz22ud940z7adyv7xgcjkahuun": "bETH",
     "terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp": "bLUNA",
+    "terra1hj8de24c3yqvcsv9r8chr03fzwsak3hgd8gv3m":"wAVAX"
 }
 
 
@@ -108,6 +109,14 @@ def job():
                 ).json()
             )
             beth["datetime"] = (beth.reset_index()["time"] / 1000).apply(lambda x: dt.datetime.utcfromtimestamp(x))
+            wavax = pd.DataFrame(
+                requests.get(
+                    r"https://api.coinhall.org/api/v1/charts/terra/candles?bars=33&from={0}&interval=1m&pairAddress=terra16jaryra6dgfvkd3gqr5tcpy3p2s37stpa9sk7s&quoteAsset=uluna&to={1}".format(
+                        uts_start, uts_now
+                    )
+                ).json()
+            )
+            wavax["datetime"] = (wavax.reset_index()["time"] / 1000).apply(lambda x: dt.datetime.utcfromtimestamp(x))
             luna = pd.DataFrame(
                 requests.get(
                     r"https://api.coinhall.org/api/v1/charts/terra/candles?bars=33&from={0}&interval=1m&pairAddress=terra1j66jatn3k50hjtg2xemnjm8s7y8dws9xqa5y8w&quoteAsset=uusd&to={1}".format(
@@ -133,12 +142,17 @@ def job():
             beth.rename(columns={"high": "high_beth"}, inplace=True)
             beth.set_index("datetime", inplace=True)
             beth.index = pd.DatetimeIndex(beth.index, tz="UTC")
+            wavax.rename(columns={"high": "high_wavax"}, inplace=True)
+            wavax.set_index("datetime", inplace=True)
+            wavax.index = pd.DatetimeIndex(wavax.index, tz="UTC")
             luna.rename(columns={"high": "high_luna"}, inplace=True)
             luna.set_index("datetime", inplace=True)
             luna.index = pd.DatetimeIndex(luna.index, tz="UTC")
             lunaust.rename(columns={"high": "high_lunaust"}, inplace=True)
             lunaust.set_index("datetime", inplace=True)
             lunaust.index = pd.DatetimeIndex(lunaust.index, tz="UTC")
+
+            
 
             def minuteRound(x):
 
@@ -154,13 +168,24 @@ def job():
 
             liquidations = liquidations.join(bluna[["high_bluna"]], how="left", on="executed_at_round_timestamp")
             liquidations = liquidations.join(beth[["high_beth"]], how="left", on="executed_at_round_timestamp")
+            liquidations = liquidations.join(wavax[["high_wavax"]], how="left", on="executed_at_round_timestamp")
             liquidations = liquidations.join(luna[["high_luna"]], how="left", on="executed_at_round_timestamp")
             liquidations = liquidations.join(lunaust[["high_lunaust"]], how="left", on="executed_at_round_timestamp")
             liquidations = liquidations.dropna()
+
+            #wavax does not have ust cross pair so much multiple * lunaust
+            liquidations['high_wavax'] =  liquidations['high_wavax']*liquidations['high_lunaust']
             liquidations["Discount_vs_UST_DEX_Price_at_Liquidation"] = np.where(
+                
                 liquidations["symbol"] == "bETH",
                 (liquidations["Discounted_Price_Per_Unit_Paid"] / liquidations["high_beth"]) - 1,
+                
+                np.where(
+                   liquidations["symbol"] == "wAVAX",
+                   (liquidations["Discounted_Price_Per_Unit_Paid"] / liquidations["high_wavax"]) - 1,
+                
                 (liquidations["Discounted_Price_Per_Unit_Paid"] / liquidations["high_bluna"]) - 1,
+             )
             )
 
             liquidations = liquidations.sort_values("executed_at", ascending=True).iloc[100:]
