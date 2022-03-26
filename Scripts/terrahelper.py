@@ -579,13 +579,13 @@ class terraHelper(object):
            
            df2s.append(df2)
         
-    prices = []
-    for i in ['OSMO', 'LUNA', 'SCRT', 'CMDX']:
-            r = requests.get('https://api-osmosis.imperator.co/tokens/v1/historical/{0}/chart?range=50y'.format(i))
-            price = pd.DataFrame.from_dict(r.json())
-            price['symbol'] = i
-            price['time'] = price['time'].apply(lambda x: dt.datetime.utcfromtimestamp(x))
-            prices.append(price)
+        #prices = []
+        #for i in ['OSMO', 'LUNA', 'SCRT', 'CMDX']:
+                #r = requests.get('https://api-osmosis.imperator.co/tokens/v1/historical/{0}/chart?range=50y'.format(i))
+                #price = pd.DataFrame.from_dict(r.json())
+                #price['symbol'] = i
+                #price['time'] = price['time'].apply(lambda x: dt.datetime.utcfromtimestamp(x))
+                #prices.append(price)
             
             
           

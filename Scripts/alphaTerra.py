@@ -702,30 +702,41 @@ class alphaTerra(object):
         """added these calls to get bLuna and bEth Collateral numbers 
         which are different then the total supplies that have above"""
 
-        req = requests.get("https://api.anchorprotocol.com/api/v1/collaterals/1d")
+        req = requests.get(
+            'https://api.anchorprotocol.com/api/v2/collaterals/1d'
+            )
         data = req.json()
-        data = pd.DataFrame.from_dict(data)
-        data["bluna_collateral"] = data["collaterals"].apply(lambda x: float(x[0]["collateral"]) / 1000000)
-        data["beth_collateral"] = data["collaterals"].apply(
-            lambda x: (float(x[1]["collateral"]) / 1000000) if len(x) > 1 else 0
-        )
+        temps = []
+        for i in np.arange(len(data)):
+            temp = pd.DataFrame.from_dict(data[i]['collaterals'])
+            temps.append(temp)
 
-        blunadf = data[["timestamp", "bluna_collateral"]]
+        data = pd.concat(temps)
+        data['total_collateral'] = data['total_collateral'].astype(float)/1000000
+        blunadf = data[data['symbol']=='bLuna'].rename(columns={'total_collateral':'bluna_collateral'})
+        blunadf = blunadf [["timestamp", "bluna_collateral"]]
         blunadf["ticker"] = "blunaCollateral"
         blunadf["timestamp"] = blunadf["timestamp"].apply(lambda x: dt.datetime.utcfromtimestamp(x // 1000))
         blunadf.rename(columns={"bluna_collateral": "apr"}, inplace=True)
-        bethdf = data[["timestamp", "beth_collateral"]]
+
+        bethdf = data[data['symbol']=='bETH'].rename(columns={'total_collateral':'beth_collateral'})
+        bethdf = bethdf [["timestamp", "beth_collateral"]]
         bethdf["ticker"] = "bethCollateral"
         bethdf["timestamp"] = bethdf["timestamp"].apply(lambda x: dt.datetime.utcfromtimestamp(x // 1000))
         bethdf.rename(columns={"beth_collateral": "apr"}, inplace=True)
 
+        savaxdf = data[data['symbol']=='wasAVAX'].rename(columns={'total_collateral':'savax_collateral'})
+        savaxdf = savaxdf [["timestamp", "savax_collateral"]]
+        savaxdf["ticker"] = "savaxCollateral"
+        savaxdf["timestamp"] = savaxdf["timestamp"].apply(lambda x: dt.datetime.utcfromtimestamp(x // 1000))
+        savaxdf.rename(columns={"savax_collateral": "apr"}, inplace=True)
+
         anchor_data.append(blunadf)
         anchor_data.append(bethdf)
+        anchor_data.append(savaxdf)
 
-        """height = json.loads(r.text)['height']
-                ib = float(json.loads(r.text)['result'][
-                    'prev_interest_buffer'][:-6])"""
 
+        #https://api.anchorprotocol.com/api/v1/borrow total borrow
         #################################
         """Anchor Yeild Reserve"""
         df = pd.DataFrame([], columns=["height", "interest_buffer"])
@@ -792,7 +803,7 @@ class alphaTerra(object):
             blankdict[i] = i
         anchor_dict = {"token": blankdict}
 
-        return [anchordata, anchor_dict]
+        return [anchordata.sort_values('date').groupby('ticker').last().reset_index(), anchor_dict]
 
     def alphatrackerUpdate(self):
 
