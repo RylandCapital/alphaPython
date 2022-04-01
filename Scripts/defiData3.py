@@ -28,7 +28,7 @@ db = client.alphaDefi
 collateral_dict = {
     "terra1dzhzukyezv0etz22ud940z7adyv7xgcjkahuun": "bETH",
     "terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp": "bLUNA",
-    "terra1hj8de24c3yqvcsv9r8chr03fzwsak3hgd8gv3m":"wAVAX"
+    "terra1z3e2e4jpk4n0xzzwlkgcfvc95pc5ldq0xcny58":"wAVAX"
 }
 
 
@@ -71,6 +71,7 @@ def job():
             liquidations["Discounted_Price_Per_Unit_Paid"] = (
                 liquidations["Total_Amount_Paid_for_Collateral"] / liquidations["number_tokens_liquidated"]
             )
+            
             liquidations["symbol"] = liquidations["token"].apply(lambda x: collateral_dict[x])
 
             "get DEX Prices"

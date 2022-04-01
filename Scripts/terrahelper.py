@@ -548,7 +548,7 @@ class terraHelper(object):
         return data
     
     def get_kujia_liquidations(limit=100):
-         req = requests.get('https://api.kujira.app/api/{1}/liquidations?limit={0}'.format(limit, ALPHADEFI_WALLET))
+         req = requests.get('https://api.kujira.app/api/{1}/liquidations?chain=terra&protocol=anchor&limit={0}'.format(limit, ALPHADEFI_WALLET))
          return pd.DataFrame.from_dict(req.json()['liquidations'])
 
     

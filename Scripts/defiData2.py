@@ -41,14 +41,15 @@ def job():
             summary = terraHelper.get_kujira_summary()
             eastern = timezone("US/Eastern")
             now = dt.datetime.now(eastern)
+            summary['ltv'] = summary["loan_amount_with_interest"].astype(float)/summary["deposit_amount_stable"].astype(float)
             summary["Date"] = now
             luna_price_last = terraHelper.coinhall_terra_latest_prices()["terra1m6ywlgn6wrjuagcmmezzz2a029gtldhey5k552"]
-            summary.columns = ["collateral_value", "loan_value", "ltv", "Date"]
+            summary.columns = ["borrow_percentage","collateral_value","loan_value", "ltv","Date"]
             summary["loan_value"] = summary["loan_value"].astype(float) / 1000000
             summary["collateral_value"] = summary["collateral_value"].astype(float) / 1000000
             summary["luna_price"] = luna_price_last
             summary["percent_of_loans"] = (summary["loan_value"] / summary["loan_value"].sum()) * 100
-            summary = summary[summary["ltv"] <= 0.8]
+            summary = summary[summary["ltv"] <= 0.81]
 
             summary["luna_liq_level"] = ((summary["loan_value"] / 0.8) / summary["collateral_value"]) * summary[
                 "luna_price"
@@ -64,7 +65,7 @@ def job():
             """update current liquidation profile live (1min)"""
             collection = db.liqprofile
             collection.drop()
-            collection.insert_many(summary[["Date", "Luna_Liquidation_Price", "Loan_Value"]].to_dict("records"))
+            collection.insert_many(summary[["Date", "Luna_Liquidation_Price", "Loan_Value"]].sort_values(by='Luna_Liquidation_Price').to_dict("records"))
             """update liquidation stats grid live (1min)"""
             collection = db.liqprofileSTATS
             collection.drop()
