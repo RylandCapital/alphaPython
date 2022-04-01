@@ -101,6 +101,7 @@ def apiUpdate():
             try:
                 collection.insert_one(i)
             except:
+                print(i)
                 pass
 
         collection = db.dashboardDict

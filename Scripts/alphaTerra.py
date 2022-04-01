@@ -966,14 +966,15 @@ class alphaTerra(object):
             "daily_registered_accounts",
             "daily_block_rewards",
         ]
-        dashboard["staking_return_daily_rank"] = dashboard["staking_return_daily"].expanding(30).rank(pct=True)
-        dashboard["staking_return_annualized_rank"] = dashboard["staking_return_annualized"].expanding(30).rank(pct=True)
-        dashboard["daily_transaction_volume_rank"] = dashboard["daily_transaction_volume"].expanding(30).rank(pct=True)
-        dashboard["daily_registered_accounts_rank"] = dashboard["daily_registered_accounts"].expanding(30).rank(pct=True)
+        dashboard["staking_return_daily_moving_avg10"] = dashboard["staking_return_daily"].rolling(10).mean()
+        dashboard["staking_return_annualized_moving_avg10"] = dashboard["staking_return_annualized"].rolling(10).mean()
+        dashboard["daily_transaction_volume_moving_avg10"] = dashboard["daily_transaction_volume"].rolling(10).mean()
+        dashboard["daily_registered_accounts_moving_avg10"] = dashboard["daily_registered_accounts"].rolling(10).mean()
 
         """ bring in ustmc via api rather than csv"""
         today = (dt.datetime.now() + dt.timedelta(days=1)).strftime("%Y-%m-%d")
 
+        #this is really circluating supply
         mc = requests.get("https://api.alphadefi.fund/historical/terra/ustmc/?to={0}&from=2020-12-22".format(today))
         mc = pd.DataFrame.from_dict(mc.json()).set_index("date").drop("_id", axis=1).sort_index().dropna()
         mc.index = pd.to_datetime(mc.index).date
@@ -989,22 +990,22 @@ class alphaTerra(object):
         final = df.join(mc, how="outer")
         final["ustmc"] = (final["close"].ffill() * final["value"])
         final["ustmc_1day_pct_change"] = final["ustmc"].pct_change()
-        final["ustmc_1day_pct_change_rank"] = final["ustmc"].pct_change().expanding(30).rank(pct=True)
-        final["ustmc_1day_pct_change_mean"] = final["ustmc"].pct_change().mean()
+        #final["ustmc_1day_pct_change_rank"] = final["ustmc"].pct_change().expanding(30).rank(pct=True)
+        #final["ustmc_1day_pct_change_mean"] = final["ustmc"].pct_change().mean()
         final["ustmc_7day_pct_change"] = final["ustmc"].pct_change(7)
-        final["ustmc_7day_pct_change_rank"] = final["ustmc"].pct_change(7).expanding(30).rank(pct=True)
-        final["ustmc_7day_pct_change_mean"] = final["ustmc"].pct_change().mean()
+        #final["ustmc_7day_pct_change_rank"] = final["ustmc"].pct_change(7).expanding(30).rank(pct=True)
+        #final["ustmc_7day_pct_change_mean"] = final["ustmc"].pct_change().mean()
         final["ustmc_1month_pct_change"] = final["ustmc"].pct_change(30)
-        final["ustmc_1month_pct_change_rank"] = final["ustmc"].pct_change(30).expanding(30).rank(pct=True)
-        final["ustmc_1month_pct_change_mean"] = final["ustmc"].pct_change(30).mean()
+        #final["ustmc_1month_pct_change_rank"] = final["ustmc"].pct_change(30).expanding(30).rank(pct=True)
+        #final["ustmc_1month_pct_change_mean"] = final["ustmc"].pct_change(30).mean()
         final["ustmc_1year_pct_change"] = final["ustmc"].pct_change(365)
-        final["ustmc_1year_pct_change_rank"] = final["ustmc"].pct_change(365).expanding(30).rank(pct=True)
-        final["ustmc_1year_pct_change_mean"] = final["ustmc"].pct_change(365).mean()
+        #final["ustmc_1year_pct_change_rank"] = final["ustmc"].pct_change(365).expanding(30).rank(pct=True)
+        #final["ustmc_1year_pct_change_mean"] = final["ustmc"].pct_change(365).mean()
 
         # get luna price
         req = requests.get(
             "https://eodhistoricaldata.com/api/eo"
-            + "d/{0}.CC?api_token={1}&period=d&fmt=json".format("LUNA-USD", EOD_API)
+            + "d/{0}.CC?api_token={1}&period=d&fmt=json".format("LUNA1-USD", EOD_API)
         )
         df = pd.DataFrame.from_dict(req.json()).set_index("date")[["close"]]
         df.index = pd.to_datetime(df.index).date
@@ -1020,21 +1021,13 @@ class alphaTerra(object):
         # get luna / ust market cap ratio
         final["luna_ustmc_ratio"] = final["luna_price"] / final["ustmc"]
         # pct rank current ratio
-        final["luna_ustmc_ratio_pct_rank"] = final["luna_ustmc_ratio"].expanding(30).rank(pct=True)
-        # historical ratio average
-        final["ratio_average"] = final["luna_ustmc_ratio"].mean()
+        final["luna_ustmc_ratio_rank"] = final["luna_ustmc_ratio"].expanding(30).rank(pct=True).rolling(10).mean()
         # luna 1 week returns
         final["luna_1week_returns"] = final["luna_price"].pct_change(7)
         # luna 1 week returns
         final["luna_1month_returns"] = final["luna_price"].pct_change(30)
         # luna 1 week returns
         final["luna_1year_returns"] = final["luna_price"].pct_change(365)
-        # luna 1 week return ranks
-        final["luna_1week_returns_pctrank"] = final["luna_price"].pct_change(7).expanding(30).rank(pct=True)
-        # luna 1 week returns
-        final["luna_1month_returns_pctrank"] = final["luna_price"].pct_change(30).expanding(30).rank(pct=True)
-        # luna 1 week returns
-        final["luna_1year_returns_pctrank"] = final["luna_price"].pct_change(365).expanding(30).rank(pct=True)
 
         final = final.join(dashboard, how="outer")
 
@@ -1043,52 +1036,36 @@ class alphaTerra(object):
             "UST Circulating Supply ($)",
             "UST Market Cap ($)",
             "UST Market Cap 1 Day Percent Change (%)",
-            "UST Market Cap 1 Day Percent Change Percentile Rank (%)",
-            "UST Market Cap 1 Day Percent Change Average (%)",
             "UST Market Cap 7 Day Percent Change (%)",
-            "UST Market Cap 7 Day Percent Change Percentile Rank (%)",
-            "UST Market Cap 7 Day Percent Change Average (%)",
             "UST Market Cap 1 Month Percent Change (%)",
-            "UST Market Cap 1 Month Percent Change Percentile Rank (%)",
-            "UST Market Cap 1 Month Percent Change Average (%)",
             "UST Market Cap 1 Year Percent Change (%)",
-            "UST Market Cap 1 Year Percent Change Percentile Rank (%)",
-            "UST Market Cap 1 Year Percent Change Average (%)",
             "LUNA Price ($)",
             "LUNA UST Market Cap Ratio",
-            "LUNA UST Market Cap Ratio Percentile Rank",
-            "LUNA UST Market Cap Ratio Average",
+            "LUNA UST Market Cap Ratio Rank",
             "LUNA 1 Week Return (%)",
             "LUNA 1 Month Return (%)",
             "LUNA 1 Year Returns (%)",
-            "LUNA 1 Week Return Percentile Rank (%)",
-            "LUNA 1 Month Return Percentile Rank (%)",
-            "LUNA 1 Year Returns Percentile Rank (%)",
             "LUNA Daily Staking Return (%)",
             "LUNA Staking Return Annualized (%)",
             "Daily UST Transaction Volume ($)",
             "Daily Registered Accounts",
             "Daily Terra Block Rewards",
-            "LUNA Daily Staking Return Percentile Rank (%)",
-            "LUNA Staking Return Annualized Percentile Rank (%)",
-            "Daily UST Transaction Volume Percentile Rank($)",
-            "Daily Registered Accounts Percentile Rank",
+            "LUNA Daily Staking Return 10 Day Moving Average",
+            "LUNA Staking Return Annualized 10 Day Moving Average",
+            "Daily UST Transaction Volume 10 Day Moving Average",
+            "Daily Registered Accounts 10 Day Moving Average",
         ]
         final.drop(["UST Price ($)", "UST Circulating Supply ($)", "LUNA Price ($)"], axis=1, inplace=True)
 
         final.columns = [i.replace(" (%)", "") for i in final.columns]
         
-        final["terraHealth"] = (
+        final["Terra Health Score"] = (
             (
-                final["Daily Registered Accounts Percentile Rank"]
-                + final["Daily UST Transaction Volume Percentile Rank($)"]
-                - final["LUNA UST Market Cap Ratio Percentile Rank"]
-            )
-            / 3
-            * 100
+                final["Daily Registered Accounts 10 Day Moving Average"].expanding(30).rank(pct=True)
+                + final["Daily UST Transaction Volume 10 Day Moving Average"].expanding(30).rank(pct=True)
+                / final["LUNA UST Market Cap Ratio Rank"].expanding(30).rank(pct=True)
+            )           
         )
-        
-        final["terraHealth"] = final["terraHealth"].ffill()
 
         try:
             cmcs = []
