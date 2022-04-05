@@ -127,6 +127,13 @@ def apiUpdate():
         time.sleep(2)
         collection.insert_many(df.to_dict("records"))
 
+        #circulating supplies, marketcaps, and prices of terra pools by timestamp collected
+        snapshot = terraHelper.terra_token_snapshot()
+       
+        collection = db.token_snapshots
+        collection.insert_many(snapshot.to_dict("records"))
+
+
 
 if __name__ == "__main__":
     apiUpdate()

@@ -454,6 +454,52 @@ class terraHelper(object):
         
         return data
     
+    def terra_token_snapshot():
+      
+      now = dt.datetime.now()
+      req = requests.get(
+            'https://api.coinhall.org/api/v1/charts/terra/pairs')
+      data = req.json()
+      df = pd.DataFrame.from_dict(data).T.iloc[:, :-4][['asset0','asset1']]
+
+      def circ(x):
+        try:
+          return x['circSupply']
+          
+        except:
+          pass
+      def address(x):
+        try:
+          return x['contractAddress']
+        except:
+          pass
+
+      df0circ = pd.DataFrame(df['asset0'].apply(lambda x: circ(x))).dropna().rename(columns={'asset0':'circ_supply'})
+      df0addy = pd.DataFrame(df['asset0'].apply(lambda x: address(x))).dropna().rename(columns={'asset0':'asset'})
+      df0 = df0circ.join(df0addy, how='inner')
+      df1circ = pd.DataFrame(df['asset1'].apply(lambda x: circ(x))).dropna().rename(columns={'asset1':'circ_supply'})
+      df1addy = pd.DataFrame(df['asset1'].apply(lambda x: address(x))).dropna().rename(columns={'asset1':'asset'})
+      df1 = df1circ.join(df1addy, how='inner')
+      final = pd.DataFrame(pd.concat([df0,df1]))
+      final['date'] = now
+      final = final
+
+      req = requests.get('https://api.coinhall.org/api/charts/terra/prices/latest')
+      data = req.json()
+      def price(x):
+        try:
+          return data[x]
+        except:
+          pass
+      final = final.reset_index()
+      final['pool_price'] = final.reset_index()['index'].apply(lambda x: price(x))
+      final = final.dropna().rename(columns={'index':'pool'})
+      final['circ_supply_of_asset'] = final['circ_supply'].astype('float').astype('int64')
+      final['pool_price'] = final['pool_price'].astype('float')
+
+      return final[['pool', 'asset', 'circ_supply_of_asset', 'pool_price']]
+
+    
     def coinhall_terra_latest_prices():
         req = requests.get('https://api.coinhall.org/api/charts/terra/prices/latest')
         data = req.json()
@@ -587,6 +633,8 @@ class terraHelper(object):
                 #price['time'] = price['time'].apply(lambda x: dt.datetime.utcfromtimestamp(x))
                 #prices.append(price)
             
+
+    #https://tokens.daic.capital/ -> get wallet concentrations
             
           
         

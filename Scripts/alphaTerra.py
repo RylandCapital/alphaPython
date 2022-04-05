@@ -1068,6 +1068,7 @@ class alphaTerra(object):
         )
 
         try:
+            #coinmarket caps onlly pulling in top 100 by market cap
             cmcs = []
             p = re.compile("(?<!\\\\)'")
             for i in ["BTC", "SOL", "ETH", "LUNA"]:
