@@ -130,7 +130,7 @@ def apiUpdate():
         #circulating supplies, marketcaps, and prices of terra pools by timestamp collected
         snapshot = terraHelper.terra_token_snapshot()
        
-        collection = db.token_snapshots
+        collection = db.circulating
         collection.insert_many(snapshot.to_dict("records"))
 
 
