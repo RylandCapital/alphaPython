@@ -175,7 +175,7 @@ def job():
             liquidations = liquidations.dropna()
 
             #wavax does not have ust cross pair so much multiple * lunaust
-            liquidations['high_wavax'] =  liquidations['high_wavax']*liquidations['high_lunaust']
+            #liquidations['high_wavax'] =  liquidations['high_wavax']*liquidations['high_lunaust']
             liquidations["Discount_vs_UST_DEX_Price_at_Liquidation"] = np.where(
                 
                 liquidations["symbol"] == "bETH",
