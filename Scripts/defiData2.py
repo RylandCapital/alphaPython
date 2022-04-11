@@ -49,7 +49,7 @@ def job():
             summary["collateral_value"] = summary["collateral_value"].astype(float) / 1000000
             summary["luna_price"] = luna_price_last
             summary["percent_of_loans"] = (summary["loan_value"] / summary["loan_value"].sum()) * 100
-            summary = summary[summary["borrow_percentage"] <= 1]
+            summary = summary[summary["borrow_percentage"] <= .99]
 
             summary["luna_liq_level"] = summary["loan_value"] / 0.8 / summary["collateral_value"] * summary["luna_price"]
 
@@ -60,19 +60,37 @@ def job():
                 columns={"luna_liq_level": "Luna_Liquidation_Price", "loan_value": "Loan_Value"}, inplace=True
             )
 
+            summary = summary.sort_values(by="Luna_Liquidation_Price")
+
+
+
+            summary["Luna_Liquidation_Price"] = summary['Luna_Liquidation_Price'].astype(int)
+            mongo_summary = pd.DataFrame(summary.groupby("Luna_Liquidation_Price")["Loan_Value"].sum().sort_index())
+            mongo_summary['collateral_value'] =  summary.groupby("Luna_Liquidation_Price")["collateral_value"].sum().sort_index()
+            mongo_summary['ltv'] = mongo_summary["Loan_Value"].astype(float)/mongo_summary["collateral_value"].astype(float)
+            mongo_summary["percent_of_loans"] =  (mongo_summary["Loan_Value"] / summary["Loan_Value"].sum()) * 100
+            mongo_summary = mongo_summary.reset_index()
+            mongo_summary["bigrisk"] = mongo_summary.sort_values(by="Loan_Value").iloc[-1]["Luna_Liquidation_Price"]
+            mongo_summary["areatowatch"] = mongo_summary.sort_values(by="Loan_Value").iloc[-2]["Luna_Liquidation_Price"]
+            mongo_summary["luna_price"] = luna_price_last
+            mongo_summary['Date'] =  now
+            mongo_summary = mongo_summary.sort_values(by="Luna_Liquidation_Price")
+            mongo_summary["Luna_Liquidation_Price"] = mongo_summary['Luna_Liquidation_Price'].astype(float)
+            
+
             """update current liquidation profile live (1min)"""
             collection = db.liqprofile
             collection.drop()
-            collection.insert_many(summary[["Date", "Luna_Liquidation_Price", "Loan_Value"]].sort_values(by='Luna_Liquidation_Price').to_dict("records"))
+            collection.insert_many(mongo_summary[["Date", "Luna_Liquidation_Price", "Loan_Value"]].sort_values(by='Luna_Liquidation_Price').to_dict("records"))
             """update liquidation stats grid live (1min)"""
             collection = db.liqprofileSTATS
             collection.drop()
-            collection.insert_many(summary.to_dict("records"))
+            collection.insert_many(mongo_summary.to_dict("records"))
 
             """update historical liq profiles every hour on 30 min"""
             if dt.datetime.now().minute == 30:
                 mycol = db["historicalLiqProfiles"]
-                mycol.insert_many(summary.to_dict("records"))
+                mycol.insert_many(mongo_summary.to_dict("records"))
 
             """master apr data and farmers market grid"""
             apr_updates = alphaTerra().masterAPR()
