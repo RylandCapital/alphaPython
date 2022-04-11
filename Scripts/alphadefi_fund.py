@@ -29,12 +29,14 @@ db = client.alphaDefi
 
 
 def apiUpdate():
-    """update coin marketcaps required for other updates below"""
+    """daily data update, anything not being updated live in defiData 1,2,3 or 4"""
     buf = PrintPrepender("[API-Update]: ")
     with redirect_stdout(buf):
 
-        print("Starting job")
+        
 
+        
+        #saves top 100 coinmarket cap top 100 tokens market cap info, need to deprecate
         collection = db.coinmarketcaps
         collection.create_index("id", unique=True)
         coincaps = terraHelper.coinmarketcaps()
@@ -48,6 +50,7 @@ def apiUpdate():
             except Exception as e:
                 errors.append(e)
 
+        #update spreadtracker 
         spreadtracker_data = m.alphatrackerUpdate()
 
         collection = db.tokenDICT
@@ -59,6 +62,7 @@ def apiUpdate():
         anchor_data[0]["id"] = anchor_data[0]["date"].astype(str) + anchor_data[0]["ticker"]
         anchor_data[0]["date"] = pd.to_datetime(anchor_data[0]["date"])
 
+        #update anchor module data
         anchordatadf = anchor_data[0].to_dict("records")
 
         collection = db.HistoricalAnchor
@@ -74,6 +78,7 @@ def apiUpdate():
         time.sleep(2)
         collection.insert_one(anchor_data[1])
 
+        #update nexus module
         print("nexus")
         nexus_update = m.nexus()
 
@@ -90,6 +95,7 @@ def apiUpdate():
         time.sleep(2)
         collection.insert_many(nexusdf.to_dict("records"))
 
+        #update terra core
         marketcap_data = m.luna_staking()
 
         marketcapdf = marketcap_data[0]
@@ -108,7 +114,6 @@ def apiUpdate():
         collection.drop()
         time.sleep(2)
         collection.insert_one(marketcap_data[1])
-
 
         #flipside daily data
         df = pd.DataFrame(

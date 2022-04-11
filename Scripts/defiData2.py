@@ -49,11 +49,9 @@ def job():
             summary["collateral_value"] = summary["collateral_value"].astype(float) / 1000000
             summary["luna_price"] = luna_price_last
             summary["percent_of_loans"] = (summary["loan_value"] / summary["loan_value"].sum()) * 100
-            summary = summary[summary["ltv"] <= 0.81]
+            summary = summary[summary["borrow_percentage"] <= 1]
 
-            summary["luna_liq_level"] = ((summary["loan_value"] / 0.8) / summary["collateral_value"]) * summary[
-                "luna_price"
-            ]
+            summary["luna_liq_level"] = summary["loan_value"] / 0.8 / summary["collateral_value"] * summary["luna_price"]
 
             summary["bigrisk"] = summary.sort_values(by="loan_value").iloc[-1]["luna_liq_level"]
             summary["areatowatch"] = summary.sort_values(by="loan_value").iloc[-2]["luna_liq_level"]
