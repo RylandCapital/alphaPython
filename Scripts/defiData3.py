@@ -189,7 +189,7 @@ def job():
              )
             )
 
-            liquidations = liquidations.sort_values("executed_at", ascending=True).iloc[100:]
+            liquidations = liquidations.sort_values("executed_at", ascending=True).sort_values(by='executed_at').iloc[100:]
             liquidations.dropna(inplace=True)
             liquidations.drop(["denom", "liquidator", "liquidatee"], axis=1, inplace=True)
 
