@@ -92,28 +92,28 @@ def job():
                 mycol = db["historicalLiqProfiles"]
                 mycol.insert_many(mongo_summary.to_dict("records"))
 
-            """master apr data and farmers market grid"""
-            apr_updates = alphaTerra().masterAPR()
-            final_grid = apr_updates[0]
-            aprs = apr_updates[1]
+                """master apr data and farmers market grid"""
+                apr_updates = alphaTerra().masterAPR()
+                final_grid = apr_updates[0]
+                aprs = apr_updates[1]
 
-            """pools by dex informational call"""
-            collection = db.dexpoolDICT
-            collection.drop()
-            blankdict = {}
-            for i in ["Terraswap", "Astroport", "Loop", "PRISM Swap"]:
-                blankdict[i] = aprs[aprs["dex"] == i]["masterSymbol"].unique().tolist()
-            collection.insert_one({"dex": blankdict})
+                """pools by dex informational call"""
+                collection = db.dexpoolDICT
+                collection.drop()
+                blankdict = {}
+                for i in ["Terraswap", "Astroport", "Loop", "PRISM Swap"]:
+                    blankdict[i] = aprs[aprs["dex"] == i]["masterSymbol"].unique().tolist()
+                collection.insert_one({"dex": blankdict})
 
-            """drops and replaces farmers market gird data"""
-            collection = db.aprCompare
-            collection.drop()
-            collection.insert_many(final_grid.to_dict(orient="records"))
+                """drops and replaces farmers market gird data"""
+                collection = db.aprCompare
+                collection.drop()
+                collection.insert_many(final_grid.to_dict(orient="records"))
 
-            """appends historical data with newest timestamped data"""
-            collection = db.aprs
-            aprs["timestamp"] = pd.to_datetime(aprs["timestamp"])
-            collection.insert_many(aprs.to_dict(orient="records"))
+                """appends historical data with newest timestamped data"""
+                collection = db.aprs
+                aprs["timestamp"] = pd.to_datetime(aprs["timestamp"])
+                collection.insert_many(aprs.to_dict(orient="records"))
 
         except Exception as e:
             print("defiData2 Error", e)

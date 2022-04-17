@@ -84,7 +84,7 @@ def job():
             json_data["index"] = now.strftime("%m/%d/%Y %H:%M:%S")
             json_data.set_index("index", inplace=True)
 
-            # these are mirror protocol spreads every minute
+            # these are mirror protocol spreads every 5 minutes
             mycol = db["mirrorSpreads"]
             for i in np.arange(len(json_data)):
                 ticker = json_data.iloc[i]["symbol"]
@@ -136,7 +136,7 @@ def job():
 
 
 if __name__ == "__main__":
-    schedule.every().minute.at(":00").do(job)
+    schedule.every(5).minute.at(":00").do(job)
 
     while True:
         schedule.run_pending()
