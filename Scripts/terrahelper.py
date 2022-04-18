@@ -295,6 +295,7 @@ class terraHelper(object):
 
     def cap_weighted_index(symbolids=[], mars_protocol_circ=90000000, nexus_protocol_circ=882213698, prism_protocol_circ=70000000):
       #ALTSZN  symbolids = ['anchor-protocol', 'pylon-protocol', 'mirror-protocol', 'astroport',  'prism-protocol', 'mars-protocol', 'nexus-governance-token']
+      #LUST symbolids = ['anchorust', 'terrausd', 'terra-luna']
       datas = []
       for symbol in symbolids:
         data = requests.get(
@@ -305,12 +306,15 @@ class terraHelper(object):
         data['timestamp'] = data['prices'].apply(lambda x:  dt.datetime.utcfromtimestamp(x[0] // 1000))
         data['prices'] = data['prices'].apply(lambda x:  float(x[1]))
         data['pct_change'] = data['prices'].pct_change()
+        # add circ supplies for any tokens we dont have them for!
         if symbol == 'mars-protocol':
           data['market_caps'] = data['prices']*mars_protocol_circ
         elif symbol == 'prism-protocol':
           data['market_caps'] = data['prices']*prism_protocol_circ
         elif symbol == 'nexus-governance-token':
           data['market_caps'] = data['prices']*nexus_protocol_circ
+        elif symbol == 'anchorust':
+          data['market_caps'] = data['prices']*0
         else: 
           data['market_caps'] = data['market_caps'].apply(lambda x:  float(x[1]))
         data['total_volumes'] = data['total_volumes'].apply(lambda x:  float(x[1]))

@@ -136,7 +136,7 @@ def job():
 
 
 if __name__ == "__main__":
-    schedule.every(5).minute.at(":00").do(job)
+    schedule.every(5).minutes.at(":00").do(job)
 
     while True:
         schedule.run_pending()
