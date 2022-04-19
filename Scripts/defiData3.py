@@ -40,7 +40,7 @@ def job():
         print("Starting DefiData3 job")
         try:
 
-            liquidations = terraHelper.get_kujia_liquidations(limit=500)
+            liquidations = terraHelper.get_kujia_liquidations(limit=200)
             liquidations["executed_at"] = pd.to_datetime(liquidations["executed_at"])
             liquidations["day"] = pd.to_datetime(liquidations["executed_at"].dt.date)
             liquidations[["bid_fee", "collateral_amount", "liquidator_fee", "repay_amount"]] = (
@@ -204,8 +204,8 @@ def job():
              )
             )
 
-            liquidations = liquidations.sort_values("executed_at", ascending=True).sort_values(by='executed_at').iloc[-100:]
-            #liquidations.dropna(inplace=True)
+            liquidations = liquidations.sort_values("executed_at", ascending=True).sort_values(by='executed_at').iloc[100:]
+            liquidations.dropna(inplace=True)
             liquidations.drop(["denom", "liquidator", "liquidatee"], axis=1, inplace=True)
 
             liquidations["max_amount"] = liquidations["Total_Amount_Paid_for_Collateral"].max()
@@ -214,11 +214,16 @@ def job():
                 liquidations["Discount_vs_UST_DEX_Price_at_Liquidation"].describe().loc["mean"]
             )
 
-            """update current liquidation transactions (1min)"""
+            """update current liquidation profile live (1min)"""
             collection = db.kujiraLiquidations
-            collection.drop()
-            collection.insert_many(liquidations.to_dict("records"))
-            
+            collection.create_index("id", unique=True)
+            errors = []
+            for document in liquidations.to_dict("records"):
+                try:
+                    collection.insert_one(document)
+                except Exception as e:
+                    errors.append(e)
+
         except Exception as e:
             print("defiData3 Error", e)
             pass
