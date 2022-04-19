@@ -592,6 +592,7 @@ class alphaTerra(object):
         anchor_data.append(final.reset_index()[["timestamp", "ticker", "apr"]])
 
         ###############################
+        '''
         """Anchor bLUNA Supply"""
         df = pd.DataFrame([], columns=["height", "total_supply"])
 
@@ -697,7 +698,7 @@ class alphaTerra(object):
         df["ticker"] = "bETHSupply"
         df.drop(["date", "height"], axis=1, inplace=True)
 
-        anchor_data.append(df)
+        anchor_data.append(df)'''
 
         """added these calls to get bLuna and bEth Collateral numbers 
         which are different then the total supplies that have above"""
@@ -726,14 +727,21 @@ class alphaTerra(object):
         bethdf.rename(columns={"beth_collateral": "apr"}, inplace=True)
 
         savaxdf = data[data['symbol']=='wasAVAX'].rename(columns={'total_collateral':'savax_collateral'})
-        savaxdf = savaxdf [["timestamp", "savax_collateral"]]
+        savaxdf = savaxdf[["timestamp", "savax_collateral"]]
         savaxdf["ticker"] = "savaxCollateral"
         savaxdf["timestamp"] = savaxdf["timestamp"].apply(lambda x: dt.datetime.utcfromtimestamp(x // 1000))
         savaxdf.rename(columns={"savax_collateral": "apr"}, inplace=True)
 
+        batomdf = data[data['symbol']=='bATOM'].rename(columns={'total_collateral':'batom_collateral'})
+        batomdf = batomdf[["timestamp", "batom_collateral"]]
+        batomdf["ticker"] = "batomCollateral"
+        batomdf["timestamp"] = batomdf["timestamp"].apply(lambda x: dt.datetime.utcfromtimestamp(x // 1000))
+        batomdf.rename(columns={"batom_collateral": "apr"}, inplace=True)
+
         anchor_data.append(blunadf)
         anchor_data.append(bethdf)
         anchor_data.append(savaxdf)
+        anchor_data.append(batomdf)
 
 
         #https://api.anchorprotocol.com/api/v1/borrow total borrow
