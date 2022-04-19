@@ -204,8 +204,8 @@ def job():
              )
             )
 
-            liquidations = liquidations.sort_values("executed_at", ascending=True).sort_values(by='executed_at').iloc[100:]
-            liquidations.dropna(inplace=True)
+            liquidations = liquidations.sort_values("executed_at", ascending=True).sort_values(by='executed_at').iloc[-100:]
+            #liquidations.dropna(inplace=True)
             liquidations.drop(["denom", "liquidator", "liquidatee"], axis=1, inplace=True)
 
             liquidations["max_amount"] = liquidations["Total_Amount_Paid_for_Collateral"].max()
