@@ -214,7 +214,11 @@ def job():
                 liquidations["Discount_vs_UST_DEX_Price_at_Liquidation"].describe().loc["mean"]
             )
 
-           
+            """update current liquidation transactions (1min)"""
+            collection = db.kujiraLiquidations
+            collection.drop()
+            collection.insert_many(liquidations.to_dict("records"))
+            
         except Exception as e:
             print("defiData3 Error", e)
             pass
