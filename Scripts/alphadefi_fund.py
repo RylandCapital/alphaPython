@@ -3,6 +3,7 @@ import pandas as pd
 import time
 import pymongo
 import requests
+import datetime as dt
 
 import os
 
@@ -138,7 +139,32 @@ def apiUpdate():
         collection = db.circulating
         collection.insert_many(snapshot.to_dict("records"))
 
+        ####Rollups
+        stop = pd.datetime.now()-dt.timedelta(days=1)
+        start = pd.datetime.now()-dt.timedelta(days=4)
+
+        collection = db.aprs
+        data = collection.find({'timestamp': {'$lt': stop, '$gte': start}})
+        datas = []
+        for i in data:
+            datas.append(i)
+
+        insert = pd.DataFrame(datas)
+        insert['date'] = pd.to_datetime(insert['timestamp']).dt.date
+        insert2 = insert.groupby(['dex','date','masterSymbol'])['apr7d'].mean()
+        insert2 = insert2.reset_index()
+        insert2['date'] = pd.to_datetime(insert2['date'])
+
+        collection = db.aprsRollD
+        for i in insert2.reset_index().to_dict(orient="records"):
+            try:
+                collection.insert(i)
+            except:
+                print('error')
+                pass
 
 
-if __name__ == "__main__":
-    apiUpdate()
+        collection.create_index([('dex',pymongo.ASCENDING),
+                            ('masterSymbol',pymongo.ASCENDING),
+                            ('date',pymongo.ASCENDING)
+                            ], name='unique_date_dex_symbol', unique=True)
