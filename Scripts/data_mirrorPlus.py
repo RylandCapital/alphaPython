@@ -54,9 +54,9 @@ db = client.alphaDefi
 
 
 def job():
-    buf = PrintPrepender("[Mirror Data]: ")
+    buf = PrintPrepender("[Defi Mirror]: ")
     with redirect_stdout(buf):
-        print("Starting DefiData1 job")
+        print("Starting job")
         try:
             try:
 
@@ -92,34 +92,30 @@ def job():
                 mydict = {"date": now, "ticker": ticker, "value": value}
                 mycol.insert_one(mydict)
 
-            """insert new aprs every hour for app"""
-            if dt.datetime.now().minute == 0:
+            # these are mirror protocol aprs, on terraswap only
+            mycol = db["HistoricalLongAPRs"]
+            for i in np.arange(len(json_data)):
+                ticker = json_data.iloc[i]["symbol"]
+                apr = json_data.iloc[i]["apr"]
+                mydict = {"date": now, "ticker": ticker, "apr": apr}
 
-                # these are mirror protocol aprs, on terraswap only
-                mycol = db["HistoricalLongAPRs"]
-                for i in np.arange(len(json_data)):
-                    ticker = json_data.iloc[i]["symbol"]
-                    apr = json_data.iloc[i]["apr"]
-                    mydict = {"date": now, "ticker": ticker, "apr": apr}
+                mycol.insert_one(mydict)
+            # these are mirror protocol short aprs, on terraswap only
+            mycol = db["HistoricalShortAPRs"]
+            for i in np.arange(len(json_data)):
+                ticker = json_data.iloc[i]["symbol"]
+                apr = json_data.iloc[i]["apr_short"]
+                mydict = {"date": now, "ticker": ticker, "apr": apr}
+                mycol.insert_one(mydict)
 
-                    mycol.insert_one(mydict)
-                # these are mirror protocol short aprs, on terraswap only
-                mycol = db["HistoricalShortAPRs"]
-                for i in np.arange(len(json_data)):
-                    ticker = json_data.iloc[i]["symbol"]
-                    apr = json_data.iloc[i]["apr_short"]
-                    mydict = {"date": now, "ticker": ticker, "apr": apr}
-                    mycol.insert_one(mydict)
-
-                """collect UST marketCap every hour"""
-                try:
-                    supply = int(requests.get("https://fcd.terra.dev/v1/circulatingsupply/uusd").json()) / 1000000
-                    mycol = db["ustMC"]
-                    ticker = "ust_circulating_supply"
-                    mydict = {"date": now, "ust_circulating_supply": supply}
-                    mycol.insert_one(mydict)
-                except Exception as e:
-                    pass
+            try:
+                supply = int(requests.get("https://fcd.terra.dev/v1/circulatingsupply/uusd").json()) / 1000000
+                mycol = db["ustMC"]
+                ticker = "ust_circulating_supply"
+                mydict = {"date": now, "ust_circulating_supply": supply}
+                mycol.insert_one(mydict)
+            except Exception as e:
+                pass
 
             spreadtracker_data = alphaTerra().alphatrackerUpdate()
 
@@ -131,13 +127,5 @@ def job():
             )
 
         except Exception as e:
-            print("defiData1 Error", e)
+            print("Defi Mirror Error", e)
             pass
-
-
-if __name__ == "__main__":
-    schedule.every(5).minutes.at(":00").do(job)
-
-    while True:
-        schedule.run_pending()
-        time.sleep(1)

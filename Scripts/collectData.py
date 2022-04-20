@@ -3,15 +3,13 @@ import time
 import threading
 import warnings
 
-import os
-
-from dotenv import load_dotenv
-
 from alphadefi_fund import apiUpdate
-from defiData1 import job as defiData1Job
-from defiData2 import job as defiData2Job
-from defiData3 import job as defiData3Job
-from defiData4 import job as defiData4Job
+from data_mirrorPlus import job as data_mirrorPlus
+from data_liqProfile import job as data_liqProfile
+from data_liqProfileHist import job as data_liqProfileHist
+from data_aprMaster import job as data_aprMaster
+from data_liqTxs import job as data_liqTxs
+from data_liqStaking import job as data_liqStaking
 
 warnings.filterwarnings("ignore")
 
@@ -23,14 +21,23 @@ def run_threaded(job_func):
 
 if __name__ == "__main__":
 
-    print("Collecting Data")
+    # every minute, replace live liquidation data
+    schedule.every().minute.at(":00").do(run_threaded, data_liqProfile)
 
+    # every three minutes check for new liquidation txs
+    schedule.every(3).minutes.at(":00").do(run_threaded, data_liqTxs)
+
+    # every 1 hours save historical liquidation data 
+    schedule.every(1).hours.at(":00").do(run_threaded, data_liqProfileHist)
+    schedule.every(1).hours.at(":00").do(run_threaded, data_liqStaking)
+
+    # every 4 hours, save master apr data and mirror data 
+    schedule.every(4).hours.at(":00").do(run_threaded, data_mirrorPlus)
+    schedule.every(4).hours.at(":00").do(run_threaded, data_aprMaster)
+
+    #every day update daily low frequency data 
     schedule.every().day.at("00:00").do(run_threaded, apiUpdate)
-    schedule.every(5).minutes.at(":00").do(run_threaded, defiData1Job)
-    schedule.every().minute.at(":00").do(run_threaded, defiData2Job)
-    schedule.every(3).minutes.at(":30").do(run_threaded, defiData3Job)
-    schedule.every(30).minutes.at(":15").do(run_threaded, defiData4Job)
-
+    
     while True:
         schedule.run_pending()
         time.sleep(30)

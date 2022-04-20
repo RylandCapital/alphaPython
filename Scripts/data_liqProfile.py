@@ -29,12 +29,12 @@ collateral_dict = {
     "terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp": "bLUNA",
 }
 
-
+#run every minute
 def job():
 
-    buf = PrintPrepender("[Defi Data 2]: ")
+    buf = PrintPrepender("[Defi Data Liq Profiles]: ")
     with redirect_stdout(buf):
-        print("Starting DefiData2 job")
+        print("Starting job")
         try:
 
             """liquidation nodes"""
@@ -87,43 +87,6 @@ def job():
             collection.drop()
             collection.insert_many(mongo_summary.to_dict("records"))
 
-            """update historical liq profiles every hour on 30 min"""
-            if dt.datetime.now().minute == 30:
-                mycol = db["historicalLiqProfiles"]
-                mycol.insert_many(mongo_summary.to_dict("records"))
-
-                """master apr data and farmers market grid"""
-                apr_updates = alphaTerra().masterAPR()
-                final_grid = apr_updates[0]
-                aprs = apr_updates[1]
-
-                """pools by dex informational call"""
-                collection = db.dexpoolDICT
-                collection.drop()
-                blankdict = {}
-                for i in ["Terraswap", "Astroport", "Loop", "PRISM Swap"]:
-                    blankdict[i] = aprs[aprs["dex"] == i]["masterSymbol"].unique().tolist()
-                collection.insert_one({"dex": blankdict})
-
-                """drops and replaces farmers market gird data"""
-                collection = db.aprCompare
-                collection.drop()
-                collection.insert_many(final_grid.to_dict(orient="records"))
-
-                """appends historical data with newest timestamped data"""
-                collection = db.aprs
-                aprs["timestamp"] = pd.to_datetime(aprs["timestamp"])
-                collection.insert_many(aprs.to_dict(orient="records"))
-
         except Exception as e:
-            print("defiData2 Error", e)
+            print("Defi Data Liq Profiles Error", e)
             pass
-
-
-# %%
-if __name__ == "__main__":
-    schedule.every().minute.at(":00").do(job)
-
-    while True:
-        schedule.run_pending()
-        time.sleep(1)

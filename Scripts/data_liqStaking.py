@@ -32,10 +32,10 @@ db = client.alphaDefi
 
 
 def job():
-    buf = PrintPrepender("[Defi Data 4]: ")
+    buf = PrintPrepender("[Defi Liq Staking]: ")
     with redirect_stdout(buf):
         try:
-            print("Starting DefiData4 job")
+            print("Starting job")
             """define date"""
             eastern = timezone("US/Eastern")
             now = dt.datetime.now(eastern)
@@ -138,4 +138,4 @@ def job():
             collection.insert_many(stakedict)
 
         except Exception as e:
-            print(e)
+            print("Defi Liq Staking", e)

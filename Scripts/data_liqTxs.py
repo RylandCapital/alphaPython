@@ -35,9 +35,9 @@ collateral_dict = {
 
 def job():
 
-    buf = PrintPrepender("[Defi Data 3]: ")
+    buf = PrintPrepender("[Defi Liq txs]: ")
     with redirect_stdout(buf):
-        print("Starting DefiData3 job")
+        print("Starting job")
         try:
 
             liquidations = terraHelper.get_kujia_liquidations(limit=200)
@@ -225,14 +225,5 @@ def job():
                     errors.append(e)
 
         except Exception as e:
-            print("defiData3 Error", e)
+            print("Defi Liq txs Error", e)
             pass
-
-
-# %%
-if __name__ == "__main__":
-    schedule.every(3).minutes.at(":30").do(job)
-
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
