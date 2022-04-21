@@ -162,9 +162,3 @@ def apiUpdate():
             except:
                 print('error')
                 pass
-
-
-        collection.create_index([('dex',pymongo.ASCENDING),
-                            ('masterSymbol',pymongo.ASCENDING),
-                            ('date',pymongo.ASCENDING)
-                            ], name='unique_date_dex_symbol', unique=True)

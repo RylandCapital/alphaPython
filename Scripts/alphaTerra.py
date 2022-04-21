@@ -1029,7 +1029,7 @@ class alphaTerra(object):
         # get luna / ust market cap ratio
         final["luna_ustmc_ratio"] = final["luna_price"] / final["ustmc"]
         # pct rank current ratio
-        final["luna_ustmc_ratio_rank"] = final["luna_ustmc_ratio"].expanding(30).rank(pct=True).rolling(10).mean()
+        final["luna_ustmc_ratio_rank"] = final["luna_ustmc_ratio"].expanding(30).rank(pct=True).ffill().rolling(10).mean()
         # luna 1 week returns
         final["luna_1week_returns"] = final["luna_price"].pct_change(7)
         # luna 1 week returns
