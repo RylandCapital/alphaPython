@@ -36,7 +36,7 @@ if __name__ == "__main__":
     schedule.every(4).hours.at(":00").do(run_threaded, data_aprMaster)
 
     #every day update daily low frequency data 
-    schedule.every().day.at("00:00").do(run_threaded, apiUpdate)
+    schedule.every().day.at("00:10").do(run_threaded, apiUpdate)
     
     while True:
         schedule.run_pending()

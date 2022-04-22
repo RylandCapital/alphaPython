@@ -140,8 +140,9 @@ def apiUpdate():
         collection.insert_many(snapshot.to_dict("records"))
 
         ####Rollups
-        stop = pd.datetime.now()-dt.timedelta(days=1)
-        start = pd.datetime.now()-dt.timedelta(days=4)
+        #data pulls for all days BEFORE the stop date, not on the stop date
+        stop = pd.to_datetime(pd.datetime.now().date())
+        start = pd.to_datetime((pd.datetime.now()-dt.timedelta(days=3)).date())
 
         collection = db.aprs
         data = collection.find({'timestamp': {'$lt': stop, '$gte': start}})
@@ -159,6 +160,7 @@ def apiUpdate():
         for i in insert2.reset_index().to_dict(orient="records"):
             try:
                 collection.insert(i)
+                print('!!!!!!!!!!!!!!!!!!!!!!!!!')
             except:
                 print('error')
                 pass
