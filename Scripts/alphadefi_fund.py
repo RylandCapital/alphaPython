@@ -164,3 +164,17 @@ def apiUpdate():
             except:
                 print('error')
                 pass
+
+        ##backtester daily data
+        collection = db.backtester
+        data = m.backtest_data()
+        tail = data.groupby('ticker').tail(5)
+
+        for i in tail.to_dict(orient="records"):
+            try:
+                collection.insert(i)
+                print('!!!!!!!!!!!!!!!!!!!!!!!!!')
+            except:
+                print('error')
+                pass
+

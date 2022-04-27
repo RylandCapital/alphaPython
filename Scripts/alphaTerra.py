@@ -1052,3 +1052,39 @@ class alphaTerra(object):
         dashboardDict = {"token": blankdict}
 
         return [master, dashboardDict]
+
+    def backtest_data(self):
+
+        symbols = {
+            'LUNA':'terra-luna',
+            'UST':'terrausd',
+            'aUST':'anchorust',
+            'ANC':'anchor-protocol',
+            'ASTRO':'astroport',
+            'PRISM':'prism-protocol',
+            'PSI':'nexus-governance-token'
+        }
+
+        datas = []
+        for i in symbols.keys():
+            apikey = symbols[i]
+
+            data = requests.get(
+            'https://api.coingecko.com/api/v3/coins/{0}/market_chart?vs_currency=usd&days=max&interval=daily'.format(apikey)
+            ).json()
+            
+            data = pd.DataFrame.from_dict(data)
+            data['timestamp'] = data['prices'].apply(lambda x:  dt.datetime.utcfromtimestamp(x[0] // 1000))
+            data['ticker'] = i
+            data['prices'] = data['prices'].apply(lambda x:  float(x[1]))
+            data['pct_change'] = data['prices'].pct_change()
+            data['1_plus_pct_change'] = (1+data['pct_change'])
+            data.drop(['market_caps', 'total_volumes'], axis=1, inplace=True)
+
+            #this removes nans at beginning and live prices from current day
+            data=data.iloc[2:-1]
+
+            datas.append(data)
+
+        return pd.concat(datas)
+

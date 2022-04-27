@@ -329,7 +329,7 @@ class terraHelper(object):
         index['weight_return'] = index['pct_change']*index['market_caps']/index['sum_mc_for_day']
         index = index[index.index<pd.to_datetime('4/6/22')]
 
-        index.reset_index().groupby('timestamp')['weight_return'].sum().to_csv(r'C:\Users\rmathews\Downloads\test.csv')
+        #index.reset_index().groupby('timestamp')['weight_return'].sum().to_csv(r'C:\Users\rmathews\Downloads\test.csv')
 
         
 
