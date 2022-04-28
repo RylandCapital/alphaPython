@@ -101,7 +101,7 @@ def apiUpdate():
 
         marketcapdf = marketcap_data[0]
         marketcapdf["id"] = marketcapdf["date"].astype(str) + marketcapdf["ticker"]
-        marketcapdf = marketcapdf.groupby(["ticker"]).last().reset_index().to_dict("records")
+        marketcapdf = marketcapdf.groupby(["ticker"]).tail(10).reset_index().to_dict("records")
         collection = db.dashboard
         collection.create_index("id", unique=True)
         for i in marketcapdf:
