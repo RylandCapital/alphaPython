@@ -172,7 +172,7 @@ def apiUpdate():
 
         for i in tail.to_dict(orient="records"):
             try:
-                collection.insert(i)
+                collection.insert_one(i)
                 print('!!!!!!!!!!!!!!!!!!!!!!!!!')
             except:
                 print('error')

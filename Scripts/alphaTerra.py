@@ -1064,7 +1064,9 @@ class alphaTerra(object):
             'ANC':'anchor-protocol',
             'ASTRO':'astroport',
             'PRISM':'prism-protocol',
-            'PSI':'nexus-governance-token'
+            'PSI':'nexus-governance-token',
+            'yLUNA':'prism-yluna',
+            'pLUNA':'prism-pluna'
         }
 
         datas = []
