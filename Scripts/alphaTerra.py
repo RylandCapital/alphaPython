@@ -506,11 +506,13 @@ class alphaTerra(object):
 
         df = pd.DataFrame([], columns=["timestamp", "height", "deposit_apr"])
         for i in r.json():
-
-            height = i["height"]
-            df.loc[height, "timestamp"] = i["timestamp"]
-            df.loc[height, "height"] = i["height"]
-            df.loc[height, "deposit_apr"] = i["deposit_apy"]
+            try:
+                height = i["height"]
+                df.loc[height, "timestamp"] = i["timestamp"]
+                df.loc[height, "height"] = i["height"]
+                df.loc[height, "deposit_apr"] = i["deposit_apy"]
+            except:
+                pass
 
         df["timestamp"] = df["timestamp"].apply(lambda x: dt.datetime.utcfromtimestamp(x / 1000))
         df.rename(columns={"deposit_apr": "apr"}, inplace=True)
