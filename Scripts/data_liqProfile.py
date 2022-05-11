@@ -64,7 +64,7 @@ def job():
 
 
 
-            summary["Luna_Liquidation_Price"] = summary['Luna_Liquidation_Price'].astype(int)
+            summary["Luna_Liquidation_Price"] = summary['Luna_Liquidation_Price'].round(1)
             mongo_summary = pd.DataFrame(summary.groupby("Luna_Liquidation_Price")["Loan_Value"].sum().sort_index())
             mongo_summary['collateral_value'] =  summary.groupby("Luna_Liquidation_Price")["collateral_value"].sum().sort_index()
             mongo_summary['ltv'] = mongo_summary["Loan_Value"].astype(float)/mongo_summary["collateral_value"].astype(float)
